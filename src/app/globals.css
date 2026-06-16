@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+/* ── BizX Design System ── */
+:root {
+  /* Primary Navy (Base #010136) */
+  --navy-light:   #8080A5;
+  --navy-mid:     #40406A;
+  --navy:         #010136;
+  --navy-dark:    #00001A;
+  --navy-deeper:  #00000D;
+  /* Secondary Blue (Base #0463EF) */
+  --blue-light:   #B0D0FF;
+  --blue-soft:    #70A0F0;
+  --blue:         #0463EF;
+  --blue-deep:    #034DBA;
+  --blue-darker:  #02388C;
+  /* Accent Teal (Base #16EA9E) */
+  --teal-light:   #B0FFF0;
+  --teal-soft:    #70E5C0;
+  --teal:         #16EA9E;
+  --teal-mid:     #11BB7F;
+  --teal-dark:    #0D8F61;
+  /* Neutrals */
+  --n-white:  #FFFFFF;
+  --n-50:     #F9F9F9;
+  --n-100:    #F0F0F0;
+  --n-200:    #E0E0E0;
+  --n-300:    #CCCCCC;
+  --n-500:    #999999;
+  --n-600:    #666666;
+  --n-800:    #333333;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'IBM Plex Sans Thai', 'IBM Plex Sans', sans-serif;
+  background: #F0F0F0;
+  color: #010136;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #8080A5; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #0463EF; }
+
+textarea { resize: none; overflow: hidden; }
+
+/* OCR progress bar */
+.ocr-fill {
+  background: linear-gradient(90deg, #0463EF, #16EA9E);
+  transition: width 0.35s ease;
+}
+
+/* Message appear */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-appear { animation: slideUp 0.22s ease-out; }
+
+/* Typing bounce */
+@keyframes bounce-dot {
+  0%,60%,100% { transform: translateY(0); }
+  30%          { transform: translateY(-6px); }
+}
+
+/* Status pulse */
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.35; }
+}
+
+/* Sidebar active glow */
+.sidebar-active-glow {
+  box-shadow: 0 0 0 1px rgba(4,99,239,0.4), 0 2px 12px rgba(4,99,239,0.2);
+}
+
+/* BizX gradient button */
+.btn-bizx {
+  background: linear-gradient(135deg, #034DBA, #0463EF);
+  box-shadow: 0 4px 14px rgba(4,99,239,0.28);
+  color: #fff;
+}
+.btn-bizx:hover { background: linear-gradient(135deg, #0463EF, #034DBA); }
+
+.btn-teal {
+  background: linear-gradient(135deg, #11BB7F, #16EA9E);
+  box-shadow: 0 4px 14px rgba(22,234,158,0.3);
+  color: #010136;
+}
+.btn-teal:hover { background: linear-gradient(135deg, #16EA9E, #11BB7F); }
