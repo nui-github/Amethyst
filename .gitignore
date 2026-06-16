@@ -16,4 +16,4 @@ dist/
 # misc
 .DS_Store
 *.log
-.claude/launch.json
+.claude/
