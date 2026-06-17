@@ -41,7 +41,7 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
       <div
         ref={wrapRef}
         className="flex-1 flex items-end gap-2 px-4 py-2.5 rounded-2xl transition-all duration-200"
-        style={{ background: '#F2F2F2', border: '1px solid #E0E0E0' }}
+        style={{ background: '#FFFFFF', border: '1px solid #E0E0E0' }}
         onFocus={e => {
           const el = e.currentTarget
           el.style.borderColor = '#0463EF'
@@ -51,7 +51,7 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
         onBlur={e => {
           const el = e.currentTarget
           el.style.borderColor = '#E0E0E0'
-          el.style.background = '#F2F2F2'
+          el.style.background = '#FFFFFF'
           el.style.boxShadow = 'none'
         }}
       >
