@@ -1,7 +1,14 @@
 'use client'
-import { Bell, Zap, User, Activity, Bot } from 'lucide-react'
+import { Bell, User, Activity, Bot, Unplug } from 'lucide-react'
+import { useState } from 'react'
 
-export function ChatHeader() {
+interface ChatHeaderProps {
+  isConnected: boolean
+  onDisconnect: () => void
+}
+
+export function ChatHeader({ isConnected, onDisconnect }: ChatHeaderProps) {
+  const [disconnectHover, setDisconnectHover] = useState(false)
   return (
     <header
       className="h-14 flex items-center px-4 gap-4 flex-shrink-0 z-10 w-full"
@@ -35,21 +42,47 @@ export function ChatHeader() {
       </div>
 
       {/* Status pill */}
-      <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0"
-        style={{
-          background: 'rgba(22,234,158,0.10)',
-          border: '1px solid rgba(22,234,158,0.35)',
-        }}
-      >
-        <span
-          className="w-2 h-2 rounded-full flex-shrink-0"
-          style={{ background: '#16EA9E', animation: 'pulse-dot 2s ease-in-out infinite' }}
-        />
-        <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: '#0D8F61' }}>
-          เชื่อมต่อ SPN แล้ว
-        </span>
-      </div>
+      {isConnected ? (
+        <button
+          onClick={onDisconnect}
+          onMouseEnter={() => setDisconnectHover(true)}
+          onMouseLeave={() => setDisconnectHover(false)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0 transition-all"
+          style={{
+            background: disconnectHover ? 'rgba(220,38,38,0.08)' : 'rgba(22,234,158,0.10)',
+            border: disconnectHover ? '1px solid rgba(220,38,38,0.35)' : '1px solid rgba(22,234,158,0.35)',
+            cursor: 'pointer',
+          }}
+        >
+          {disconnectHover ? (
+            <Unplug size={11} style={{ color: '#DC2626', flexShrink: 0 }} />
+          ) : (
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ background: '#16EA9E', animation: 'pulse-dot 2s ease-in-out infinite' }}
+            />
+          )}
+          <span
+            className="text-[11px] font-semibold whitespace-nowrap"
+            style={{ color: disconnectHover ? '#DC2626' : '#0D8F61' }}
+          >
+            {disconnectHover ? 'Disconnect' : 'เชื่อมต่อ SPN แล้ว'}
+          </span>
+        </button>
+      ) : (
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0"
+          style={{
+            background: 'rgba(153,153,153,0.10)',
+            border: '1px solid rgba(153,153,153,0.30)',
+          }}
+        >
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#CCCCCC' }} />
+          <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: '#999999' }}>
+            ยังไม่เชื่อมต่อ SPN
+          </span>
+        </div>
+      )}
 
       {/* Action icons */}
       <div className="flex items-center gap-1 flex-shrink-0">

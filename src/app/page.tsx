@@ -573,7 +573,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#F2F2F2' }}>
-      <ChatHeader />
+      <ChatHeader isConnected={isConnected} onDisconnect={() => setIsConnected(false)} />
       <div className="flex flex-1 overflow-hidden">
       <Sidebar activeItem={sidebarActive} onSelect={setSidebarActive} />
       <div className="flex-1 flex flex-col overflow-hidden">
