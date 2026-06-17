@@ -2,7 +2,7 @@
 import {
   MessageSquareText, FileCheck2, Package, FileText,
   Clock3, Settings, Plus, ChevronRight,
-  BarChart2, LayoutDashboard,
+  BarChart2, LayoutDashboard, ListChecks,
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ interface SidebarProps {
 
 const mainItems = [
   { id: 'chatbot',   label: 'Chatbot',    icon: MessageSquareText },
+  { id: 'queue',     label: 'คิวงาน',    icon: ListChecks },
   { id: 'dashboard', label: 'Dashboard',  icon: LayoutDashboard },
   { id: 'license',   label: 'ใบอนุญาต',  icon: FileCheck2 },
   { id: 'rgoods',    label: 'RGoods',     icon: Package },

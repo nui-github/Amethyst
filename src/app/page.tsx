@@ -5,6 +5,7 @@ import { ChatHeader } from '@/components/chat/ChatHeader'
 import { ChatArea }   from '@/components/chat/ChatArea'
 import { ChatInput }  from '@/components/chat/ChatInput'
 import { PreviewModal, ConfirmModal } from '@/components/chat/Modals'
+import { QueuePage } from '@/components/queue/QueuePage'
 import { ChatMessage, ChatStep, FormData, UploadSlots } from '@/lib/types'
 import { generateId, getTime } from '@/lib/utils'
 import { fetchSPN as fetchSPNApi } from '@/lib/api/spn'
@@ -616,18 +617,24 @@ export default function Home() {
       />
       <div className="flex flex-1 overflow-hidden">
       <Sidebar activeItem={sidebarActive} onSelect={setSidebarActive} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <ChatArea
-          messages={messages} isTyping={isTyping}
-          ocrProgress={ocrProgress} ocrStages={ocrStages}
-          formValues={formValues} currentStep={step}
-          pendingRef={pendingRef}
-          onFormChange={handleFormChange} onPreview={handlePreview}
-          onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
-          onConnected={showConnectOptions}
-        />
-        <ChatInput onSend={handleSend} disabled={isTyping} />
-      </div>
+      {sidebarActive === 'queue' ? (
+        <div className="flex-1 overflow-hidden">
+          <QueuePage />
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ChatArea
+            messages={messages} isTyping={isTyping}
+            ocrProgress={ocrProgress} ocrStages={ocrStages}
+            formValues={formValues} currentStep={step}
+            pendingRef={pendingRef}
+            onFormChange={handleFormChange} onPreview={handlePreview}
+            onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
+            onConnected={showConnectOptions}
+          />
+          <ChatInput onSend={handleSend} disabled={isTyping} />
+        </div>
+      )}
       </div>
 
       {showPreview && (
