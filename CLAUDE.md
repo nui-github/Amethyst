@@ -10,7 +10,7 @@ Built with Next.js 14 App Router + TypeScript + Tailwind CSS + Lucide React.
 - **Framework**: Next.js 14 (App Router, `src/` directory)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS + inline `style={}` for BizX brand colors
-- **Icons**: Lucide React v0.383.0
+- **Icons**: Lucide React v0.383.0 (React components in `.tsx`; inline SVG strings in bot HTML messages via `ic()` helpers)
 - **Font**: IBM Plex Sans Thai (loaded via `<link>` in layout.tsx)
 - **Utilities**: clsx + tailwind-merge
 
@@ -23,7 +23,7 @@ Built with Next.js 14 App Router + TypeScript + Tailwind CSS + Lucide React.
 Navy (Primary):   #010136 (bg), #40406A (mid), #8080A5 (muted text)
 Blue (Action):    #0463EF (active/CTA), #034DBA (gradient start), #B0D0FF (light)
 Teal (Success):   #16EA9E (accent), #11BB7F (mid), #0D8F61 (text on light)
-Neutral:          #F0F0F0 (app bg), #F9F9F9 (card lightest), #E0E0E0 (borders)
+Neutral:          #F2F2F2 (app bg), #F9F9F9 (card lightest), #E0E0E0 (borders)
                   #CCCCCC (dashed), #999999 (muted), #666666 (labels), #333333 (dark)
 ```
 
@@ -45,6 +45,27 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 
 ---
 
+## Layout Structure
+
+```
+<div flex-col h-screen>          ← #F2F2F2 bg
+  <ChatHeader />                 ← full-width, h-14, white, borderBottom #E8E8E8
+  <div flex flex-1>
+    <Sidebar />                  ← fixed w-56, white, light theme
+    <div flex-1 flex-col>
+      <ChatArea />               ← scrollable, #F2F2F2 bg
+      <ChatInput />              ← h-75px, white, borderTop #E8E8E8
+    </div>
+  </div>
+</div>
+```
+
+- **ChatHeader**: full-width across entire screen, contains logo + brand + title + status pill + action icons
+- **Sidebar**: no collapse, fixed width `w-56`, light white theme (see `L` color object in Sidebar.tsx)
+- **Settings section** in sidebar: `padding: '17px 8px'` to match ChatInput bar height (75px)
+
+---
+
 ## File Structure
 ```
 src/
@@ -54,10 +75,11 @@ src/
 │   └── page.tsx            ← ALL state + ALL chat logic + inline HTML helpers
 ├── components/
 │   ├── chat/
-│   │   ├── Sidebar.tsx          ← Navy (#010136) sidebar, Bot icon, active=blue
-│   │   ├── ChatHeader.tsx       ← White header, teal status pill
+│   │   ├── Sidebar.tsx          ← Light white sidebar (L color object), fixed w-56
+│   │   ├── ChatHeader.tsx       ← Full-width white header, logo left, teal status pill
 │   │   ├── ChatArea.tsx         ← Routes special content keys to React components
-│   │   ├── ChatInput.tsx        ← Textarea + blue send button
+│   │   ├── ChatInput.tsx        ← Textarea + blue send button, white bg
+│   │   ├── ConnectPanel.tsx     ← ShippingNet login form (username/password) with Lucide icons
 │   │   ├── TypingIndicator.tsx  ← 3-dot bounce, navy→blue AI avatar
 │   │   ├── FormPanel.tsx        ← OCR form: teal=filled, blue-soft=missing
 │   │   ├── FullUploadPanel.tsx  ← 4-slot drag-drop (invoice/customs/coa/ulicense)
@@ -74,22 +96,54 @@ src/
 
 ---
 
+## Inline SVG Icon Helpers (page.tsx)
+
+Bot messages use `dangerouslySetInnerHTML` — Lucide React components cannot be used inside them.
+Instead, use these helper functions defined at module level in `page.tsx`:
+
+```ts
+const ic = (path: string, size = 16, color = 'currentColor') => `<svg ...>${path}</svg>`
+const icCheck      = (c='#0D8F61', s=16) => ic('<path d="M20 6 9 17l-5-5"/>', s, c)
+const icX          = (c='#C0392B', s=16) => ic('<path d="M18 6 6 18M6 6l12 12"/>', s, c)
+const icWarn       = (c='#B45309', s=16) => ic('...triangle...', s, c)
+const icFile       = (c='#1565C0', s=16) => ic('...file...', s, c)
+const icList       = (c='#0463EF', s=16) => ic('...list...', s, c)
+const icPlus       = (c='#0D8F61', s=16) => ic('...plus...', s, c)
+const icFolder     = (c='#B45309', s=16) => ic('...folder...', s, c)
+const icFolderOpen = (c='#0463EF', s=32) => ic('...folder...', s, c)
+const icSearch     = (c='#0463EF', s=16) => ic('...search...', s, c)
+const icShip       = (c='#0D8F61', s=18) => ic('...ship...', s, c)
+const icUpload     = (c='#0463EF', s=32) => ic('...upload...', s, c)
+```
+
+Use these in template literals: `${icCheck(C.tealDark, 15)}` etc.
+For inline flex alignment, wrap the element: `style="display:inline-flex;align-items:center;gap:5px"`.
+
+**Never use emoji (🚢 📂 ✅ ❌ ⚠️ etc.) in bot messages** — use SVG helpers instead.
+
+---
+
 ## Chat Flow Architecture
 
 ```
 handleSend(text)
-  ├─ HTHM ref + "สร้าง/rgoods"  → fetchSPN(ref)
-  │     ├─ ref in KNOWN_REFS     → SPN card + step:'upload'          [Flow ปกติ]
-  │     └─ not found             → spnNotFound() + step:'not_found'  [Flow broker/ไม่มีใบขน]
-  │           ├─ chooseXML()       → showXMLUpload() + step:'xml_upload'
-  │           │     └─ processXML() → xmlDone() + step:'preview_ready' → Preview → done
-  │           ├─ chooseInvoice()   → showInvoiceUpload() + step:'invoice_upload'
-  │           │     └─ processInvoice() → showHsAnalysis() + step:'hs_analysis'
-  │           │           └─ proceedFromInvoice() → showFormFromInvoice() + step:'form'
-  │           └─ chooseFullUpload() → step:'full_upload' → OCR → form
-  ├─ "อัปโหลด/upload"           → showUpload() + step:'upload'
-  ├─ "ตรวจสอบสถานะ"             → showStatus()
-  └─ unknown                     → fallback + chips
+  ├─ HTHM ref + "สร้าง/rgoods"
+  │     ├─ !isConnected → setPendingRef(ref) → show_connect → ConnectPanel
+  │     │     └─ onConnect() → showConnectOptions(ref) → 2 choice cards
+  │     │           ├─ "ดูสถานะ" → showStatus()
+  │     │           └─ "สร้างใหม่" → fetchSPN(ref)
+  │     └─ isConnected → fetchSPN(ref)
+  │           ├─ ref in KNOWN_REFS → SPN card + step:'upload'          [Flow ปกติ]
+  │           └─ not found         → spnNotFound() + step:'not_found'  [Flow broker]
+  │                 ├─ chooseXML()       → showXMLUpload() + step:'xml_upload'
+  │                 │     └─ processXML() → xmlDone() + step:'preview_ready'
+  │                 ├─ chooseInvoice()   → showInvoiceUpload() + step:'invoice_upload'
+  │                 │     └─ processInvoice() → showHsAnalysis() + step:'hs_analysis'
+  │                 │           └─ proceedFromInvoice() → showFormFromInvoice() + step:'form'
+  │                 └─ chooseFullUpload() → step:'full_upload' → OCR → form
+  ├─ "อัปโหลด/upload"   → showUpload() + step:'upload'
+  ├─ "ตรวจสอบสถานะ"    → showStatus()
+  └─ unknown             → fallback + chips
 
 startOCR() → 4-stage animation (700ms each) → showForm() → step:'form'
 handlePreview() → validate importDate + drugRegNo → PreviewModal
@@ -102,6 +156,12 @@ handleConfirmSubmit() → ConfirmModal → handleSubmit() → success → step:'
 `xml_upload` → `preview_ready` = not_found XML path (all fields pre-filled)
 `invoice_upload` → `hs_analysis` = not_found Invoice path (HS Code analysis)
 
+### ShippingNet Connect Flow
+- State: `isConnected: boolean`, `pendingRef: string` in `page.tsx`
+- When user triggers RGoods while `!isConnected`: saves ref to `pendingRef`, shows `show_connect` message
+- `ConnectPanel` renders in ChatArea for `show_connect` key; calls `onConnected(pendingRef)` after mock auth (1200ms)
+- `showConnectOptions(ref)` sets `isConnected = true` and presents 2 choice cards
+
 ### KNOWN_REFS (พบใน SPN — ใช้ Flow ปกติ)
 `HTHM000000001` ถึง `HTHM000000005` — ref อื่น (เช่น HTHM000000099) → not_found flow
 
@@ -112,6 +172,7 @@ handleConfirmSubmit() → ConfirmModal → handleSubmit() → success → step:'
 | `'ocr_progress'` | OcrProgress component (live animation) |
 | `'show_form'` | FormPanel component |
 | `'show_full_upload'` | FullUploadPanel component |
+| `'show_connect'` | ConnectPanel component (ShippingNet login) |
 | anything else (isHtml=true) | `dangerouslySetInnerHTML` |
 
 ---
@@ -124,6 +185,7 @@ Bot messages contain inline HTML with `onclick`. Page exposes:
   triggerUpload:      () => withTyping(() => showUpload(), 300),
   triggerFullUpload:  () => { setStep('full_upload'); addMessage({...}) },
   startOCRDemo:       () => startOCR(),
+  onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
   // Not-found flow choices
   chooseXML:          () => withTyping(() => showXMLUpload(), 300),
   chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
@@ -189,18 +251,20 @@ npm run lint   # ESLint
 1. **BizX colors only** — never use Tailwind color classes (text-blue-500 etc.) for brand colors; always use inline `style={{ color: '#0463EF' }}` or the `C.*` constants in page.tsx
 2. **IBM Plex Sans Thai** — font is loaded via `<link>` in layout.tsx, not next/font
 3. **New bot HTML messages** — use template literals with `C.*` constants and `btnPrimary`, `chipStyle` etc. helper strings defined at top of page.tsx
-4. **New chat commands** — add to `handleSend()` in page.tsx before the fallback branch
-5. **New sidebar items** — add to `mainItems` array in Sidebar.tsx
-6. **New special message types** — add content key + React component branch in ChatArea.tsx
-7. **State is centralized** — all useState in page.tsx, pass down as props
-8. **TypeScript strict** — no `any` except for `window.__chat` bridge
-9. **Animations** — defined in globals.css (slideUp, bounce-dot, pulse-dot) and tailwind.config.js
-10. **OCR progress bar** — uses `.ocr-fill` class from globals.css (blue→teal gradient)
+4. **No emoji in bot messages** — use inline SVG helpers (`icCheck`, `icX`, `icWarn`, `icFile`, etc.) defined at module level in page.tsx
+5. **New chat commands** — add to `handleSend()` in page.tsx before the fallback branch
+6. **New sidebar items** — add to `mainItems` array in Sidebar.tsx
+7. **New special message types** — add content key + React component branch in ChatArea.tsx
+8. **State is centralized** — all useState in page.tsx, pass down as props
+9. **TypeScript strict** — no `any` except for `window.__chat` bridge
+10. **Animations** — defined in globals.css (slideUp, bounce-dot, pulse-dot) and tailwind.config.js
+11. **OCR progress bar** — uses `.ocr-fill` class from globals.css (blue→teal gradient)
 
 ---
 
 ## Suggested Next Steps
 - [ ] Replace `KNOWN_REFS` + `MOCK_FORM_DATA` with real SPN API calls
+- [ ] Replace mock ShippingNet auth in ConnectPanel with real API login
 - [ ] Replace OCR animation with real OCR service (AWS Textract / Google Vision)
 - [ ] Add file upload to storage (S3 / GCS) in FullUploadPanel
 - [ ] Mobile responsive: collapse sidebar to icon rail at <768px
