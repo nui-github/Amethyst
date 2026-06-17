@@ -1,6 +1,6 @@
 'use client'
 import { Bell, User, Activity, Bot, Unplug } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ChatHeaderProps {
   isConnected: boolean
@@ -9,7 +9,11 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({ isConnected, onDisconnect, onConnectClick }: ChatHeaderProps) {
-  const [disconnectHover, setDisconnectHover] = useState(false)
+  const [hover, setHover] = useState(false)
+
+  // reset hover whenever connection state changes
+  useEffect(() => { setHover(false) }, [isConnected])
+
   return (
     <header
       className="h-14 flex items-center px-4 gap-4 flex-shrink-0 z-10 w-full"
@@ -44,56 +48,52 @@ export function ChatHeader({ isConnected, onDisconnect, onConnectClick }: ChatHe
 
       {/* Status pill */}
       {isConnected ? (
+        // Connected — hover reveals Disconnect
         <button
           onClick={onDisconnect}
-          onMouseEnter={() => setDisconnectHover(true)}
-          onMouseLeave={() => setDisconnectHover(false)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0 transition-all"
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0"
           style={{
-            background: disconnectHover ? 'rgba(220,38,38,0.08)' : 'rgba(22,234,158,0.10)',
-            border: disconnectHover ? '1px solid rgba(220,38,38,0.35)' : '1px solid rgba(22,234,158,0.35)',
+            background: hover ? 'rgba(220,38,38,0.08)' : 'rgba(22,234,158,0.10)',
+            border: hover ? '1px solid rgba(220,38,38,0.35)' : '1px solid rgba(22,234,158,0.35)',
             cursor: 'pointer',
+            transition: 'background .15s, border-color .15s',
           }}
         >
-          {disconnectHover ? (
-            <Unplug size={11} style={{ color: '#DC2626', flexShrink: 0 }} />
-          ) : (
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ background: '#16EA9E', animation: 'pulse-dot 2s ease-in-out infinite' }}
-            />
-          )}
+          {hover
+            ? <Unplug size={11} style={{ color: '#DC2626', flexShrink: 0 }} />
+            : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#16EA9E', animation: 'pulse-dot 2s ease-in-out infinite' }} />
+          }
           <span
             className="text-[11px] font-semibold whitespace-nowrap"
-            style={{ color: disconnectHover ? '#DC2626' : '#0D8F61' }}
+            style={{ color: hover ? '#DC2626' : '#0D8F61', transition: 'color .15s' }}
           >
-            {disconnectHover ? 'Disconnect' : 'เชื่อมต่อ SPN แล้ว'}
+            {hover ? 'Disconnect' : 'เชื่อมต่อ SPN แล้ว'}
           </span>
         </button>
       ) : (
+        // Not connected — hover hints to connect
         <button
           onClick={onConnectClick}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0 transition-all"
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0"
           style={{
-            background: 'rgba(153,153,153,0.10)',
-            border: '1px solid rgba(153,153,153,0.30)',
+            background: hover ? 'rgba(4,99,239,0.08)' : 'rgba(153,153,153,0.10)',
+            border: hover ? '1px solid rgba(4,99,239,0.35)' : '1px solid rgba(153,153,153,0.30)',
             cursor: 'pointer',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(4,99,239,0.08)'
-            e.currentTarget.style.borderColor = 'rgba(4,99,239,0.35)'
-            e.currentTarget.querySelector('span:first-child')!.setAttribute('style', 'width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:#0463EF')
-            e.currentTarget.querySelector('span:last-child')!.setAttribute('style', 'font-size:11px;font-weight:600;white-space:nowrap;color:#0463EF')
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(153,153,153,0.10)'
-            e.currentTarget.style.borderColor = 'rgba(153,153,153,0.30)'
-            e.currentTarget.querySelector('span:first-child')!.setAttribute('style', 'width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:#CCCCCC')
-            e.currentTarget.querySelector('span:last-child')!.setAttribute('style', 'font-size:11px;font-weight:600;white-space:nowrap;color:#999999')
+            transition: 'background .15s, border-color .15s',
           }}
         >
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#CCCCCC' }} />
-          <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: '#999999' }}>
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: hover ? '#0463EF' : '#CCCCCC', transition: 'background .15s' }}
+          />
+          <span
+            className="text-[11px] font-semibold whitespace-nowrap"
+            style={{ color: hover ? '#0463EF' : '#999999', transition: 'color .15s' }}
+          >
             ยังไม่เชื่อมต่อ SPN
           </span>
         </button>
