@@ -40,6 +40,22 @@ const badgeBlue   = `display:inline-flex;align-items:center;padding:2px 8px;bord
 const badgeAmber  = `display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(255,165,0,0.12);color:#B45309`
 const badgeGreen  = `display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(22,234,158,0.15);color:${C.tealDark}`
 
+// ── Inline SVG helpers (for dangerouslySetInnerHTML contexts) ────────
+const ic = (path: string, size = 16, color = 'currentColor') =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${path}</svg>`
+
+const icCheck   = (c='#0D8F61', s=16) => ic('<path d="M20 6 9 17l-5-5"/>', s, c)
+const icX       = (c='#C0392B', s=16) => ic('<path d="M18 6 6 18M6 6l12 12"/>', s, c)
+const icWarn    = (c='#B45309', s=16) => ic('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>', s, c)
+const icFile    = (c='#1565C0', s=16) => ic('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>', s, c)
+const icList    = (c='#0463EF', s=16) => ic('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', s, c)
+const icPlus    = (c='#0D8F61', s=16) => ic('<path d="M5 12h14M12 5v14"/>', s, c)
+const icFolder  = (c='#B45309', s=16) => ic('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>', s, c)
+const icFolderOpen = (c='#0463EF', s=32) => ic('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>', s, c)
+const icSearch  = (c='#0463EF', s=16) => ic('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>', s, c)
+const icShip    = (c='#0D8F61', s=18) => ic('<path d="M18 18V5H6v13"/><path d="M2 18h20"/><path d="M12 12v6"/><path d="M12 5V2"/><path d="M8 12h8"/>', s, c)
+const icUpload  = (c='#0463EF', s=32) => ic('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>', s, c)
+
 const WELCOME: ChatMessage = { id: 'welcome', role: 'bot', content: 'welcome', time: '09:00', isHtml: true }
 
 export default function Home() {
@@ -126,7 +142,7 @@ export default function Home() {
     setIsConnected(true)
     botMsg(`<div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:18px">✅</span>
+        ${icCheck('#0D8F61', 20)}
         <div>
           <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">เชื่อมต่อสำเร็จแล้ว!</p>
           <p style="font-size:11px;color:${C.n500};margin:0">ต้องการดำเนินการอะไรกับใบขน <strong>${ref}</strong>?</p>
@@ -137,7 +153,7 @@ export default function Home() {
           style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
           onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.04)'"
           onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">📋</div>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0">${icList('#0463EF',18)}</div>
           <div>
             <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">ดูรายการสถานะเดิม</p>
             <p style="font-size:11px;color:${C.n500};margin:0">ดูรายการ RGoods ที่มีอยู่แล้วใน ShippingNet</p>
@@ -147,7 +163,7 @@ export default function Home() {
           style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
           onmouseover="this.style.borderColor='${C.teal}';this.style.background='rgba(22,234,158,0.04)'"
           onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(22,234,158,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">➕</div>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(22,234,158,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">${icPlus('#0D8F61',18)}</div>
           <div>
             <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">สร้าง RGoods ใหม่</p>
             <p style="font-size:11px;color:${C.n500};margin:0">สร้างใบอนุญาตใหม่จากใบขน ${ref}</p>
@@ -172,9 +188,9 @@ export default function Home() {
         </div>
         <span style="color:${C.n300};font-size:18px">›</span>
       </div>`
-    botMsg(`<span style="color:#B45309;font-weight:700;font-size:13px">⚠️ ไม่พบข้อมูลใบขน ${ref} ใน ShippingNet</span>
+    botMsg(`<span style="color:#B45309;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:5px">${icWarn('#B45309',15)} ไม่พบข้อมูลใบขน ${ref} ใน ShippingNet</span>
       <div style="${cardWrap};border-color:#FDE68A;margin-bottom:10px">
-        <div style="${cardHead};background:#FFFBEB;color:#B45309;border-color:#FDE68A">🔴 SPN: ไม่พบข้อมูล</div>
+        <div style="${cardHead};background:#FFFBEB;color:#B45309;border-color:#FDE68A;display:flex;align-items:center;gap:6px">${icX('#B45309',13)} SPN: ไม่พบข้อมูล</div>
         <div style="${cardBody}">
           <p style="font-size:12px;color:${C.n600};line-height:1.7">
             ไม่พบเลข Ref <strong>${ref}</strong> ในระบบ ShippingNet<br>
@@ -183,25 +199,25 @@ export default function Home() {
         </div>
       </div>
       <p style="font-size:12px;font-weight:600;color:${C.navy};margin-bottom:8px">กรุณาเลือกวิธีดำเนินการต่อ:</p>
-      ${choiceCard(`window.__chat?.chooseXML()`, 'rgba(21,101,192,0.1)', '#1565C0', '📄', 'อัปโหลดไฟล์ XML', 'ระบบนำเข้าข้อมูลจาก XML และสร้างใบ RGoods ได้ทันที ไม่ต้องกรอกข้อมูลเพิ่ม')}
-      ${choiceCard(`window.__chat?.chooseInvoice()`, 'rgba(22,234,158,0.15)', '${C.tealDark}', '🧾', 'อัปโหลด Invoice', 'ระบบอ่าน Invoice แล้ววิเคราะห์ HS Code พร้อมแนะนำกรมที่ต้องขอใบอนุญาต')}
-      ${choiceCard(`window.__chat?.chooseFullUpload()`, 'rgba(180,83,9,0.1)', '#B45309', '📂', 'อัปโหลดเอกสารครบชุด', 'อัปโหลด Invoice + ใบขนสินค้า + COA + ใบเลข U พร้อมกัน')}`)
+      ${choiceCard(`window.__chat?.chooseXML()`, 'rgba(21,101,192,0.1)', '#1565C0', icFile('#1565C0',18), 'อัปโหลดไฟล์ XML', 'ระบบนำเข้าข้อมูลจาก XML และสร้างใบ RGoods ได้ทันที ไม่ต้องกรอกข้อมูลเพิ่ม')}
+      ${choiceCard(`window.__chat?.chooseInvoice()`, 'rgba(22,234,158,0.15)', C.tealDark, icList(C.tealDark,18), 'อัปโหลด Invoice', 'ระบบอ่าน Invoice แล้ววิเคราะห์ HS Code พร้อมแนะนำกรมที่ต้องขอใบอนุญาต')}
+      ${choiceCard(`window.__chat?.chooseFullUpload()`, 'rgba(180,83,9,0.1)', '#B45309', icFolder('#B45309',18), 'อัปโหลดเอกสารครบชุด', 'อัปโหลด Invoice + ใบขนสินค้า + COA + ใบเลข U พร้อมกัน')}`)
   }, [botMsg])
 
   // ── FETCH SPN ───────────────────────────────────────────────────
   const fetchSPN = useCallback((ref: string) => {
     setCurrentRef(ref)
     setIsTyping(true)
-    botMsg(`<span style="color:${C.blue};font-size:13px">🔄 กำลังดึงข้อมูลจาก ShippingNet สำหรับ <strong>${ref}</strong>...</span>`)
+    botMsg(`<span style="color:${C.blue};font-size:13px;display:inline-flex;align-items:center;gap:5px">${icSearch(C.blue,14)} กำลังดึงข้อมูลจาก ShippingNet สำหรับ <strong>${ref}</strong>...</span>`)
     fetchSPNApi(ref).then(({ found, data }) => {
       setIsTyping(false)
       if (!found || !data) { spnNotFound(ref); return }
       const merged = { ...data, ref }
       setFormData(merged)
       setStep('upload')
-      botMsg(`<span style="color:${C.tealDark};font-weight:700">✅ ดึงข้อมูลจาก SPN สำเร็จแล้วครับ</span>
+      botMsg(`<span style="color:${C.tealDark};font-weight:700;display:inline-flex;align-items:center;gap:5px">${icCheck(C.tealDark,15)} ดึงข้อมูลจาก SPN สำเร็จแล้วครับ</span>
         <div style="${cardWrap}">
-          <div style="${cardHead}">📋 ข้อมูลใบขน #${ref}</div>
+          <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.navy,13)} ข้อมูลใบขน #${ref}</div>
           <div style="${cardBody}">
             <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">ผู้นำเข้า</span><span style="font-weight:700;color:${C.blue}">${merged.importer}</span></div>
             <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">ท่าเรือ</span><span style="font-weight:600;color:${C.navy}">${merged.port}</span></div>
@@ -213,7 +229,7 @@ export default function Home() {
         </div>
         <p style="font-size:12px;color:${C.n600};margin-top:10px">ขั้นตอนถัดไป: กรุณาอัปโหลดเอกสารประกอบครับ</p>
         <div style="display:flex;gap:6px;margin-top:8px">
-          <button onclick="window.__chat?.sendQuick('อัปโหลดเอกสาร')" style="${chipStyle}">📎 อัปโหลดเอกสาร</button>
+          <button onclick="window.__chat?.sendQuick('อัปโหลดเอกสาร')" style="${chipStyle};display:inline-flex;align-items:center;gap:5px">${icUpload(C.blue,13)} อัปโหลดเอกสาร</button>
         </div>`)
     })
   }, [botMsg, spnNotFound])
@@ -221,15 +237,15 @@ export default function Home() {
   // ── XML FLOW ────────────────────────────────────────────────────
   const showXMLUpload = useCallback(() => {
     setStep('xml_upload')
-    botMsg(`<span style="color:#1565C0;font-weight:700">📄 อัปโหลดไฟล์ XML</span>
+    botMsg(`<span style="color:#1565C0;font-weight:700;display:inline-flex;align-items:center;gap:5px">${icFile('#1565C0',15)} อัปโหลดไฟล์ XML</span>
       <p style="font-size:12px;color:${C.n600};margin:6px 0 10px">ระบบจะแปลงข้อมูล XML เป็น RGoods โดยอัตโนมัติ ไม่ต้องกรอกข้อมูลเพิ่มเติม</p>
       <div style="border:2px dashed rgba(21,101,192,0.4);border-radius:12px;padding:20px;text-align:center;background:rgba(21,101,192,0.04)">
-        <div style="font-size:32px;margin-bottom:8px">📁</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${icFolderOpen('#1565C0',36)}</div>
         <p style="font-size:13px;font-weight:600;color:#1565C0">คลิกหรือลากไฟล์ XML มาวาง</p>
         <p style="font-size:11px;color:${C.n500};margin-top:3px">รองรับเฉพาะ .xml เท่านั้น</p>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button onclick="window.__chat?.processXML()" style="${btnPrimary}">⚡ ประมวลผล XML</button>
+        <button onclick="window.__chat?.processXML()" style="${btnPrimary};display:inline-flex;align-items:center;gap:5px">${icSearch(C.blue,13)} ประมวลผล XML</button>
         <button onclick="window.__chat?.spnNotFoundBack()" style="${btnSecondary}">← ย้อนกลับ</button>
       </div>`)
   }, [botMsg])
@@ -255,9 +271,9 @@ export default function Home() {
     setFormData(prev => ({ ...prev, ...data }))
     setFormValues(data as Record<string, string>)
     setStep('preview_ready')
-    botMsg(`<span style="color:${C.tealDark};font-weight:700">✅ แปลงข้อมูล XML สำเร็จ!</span> ดึงข้อมูลครบทุกฟิลด์แล้ว ไม่ต้องกรอกเพิ่มเติม
+    botMsg(`<span style="color:${C.tealDark};font-weight:700;display:inline-flex;align-items:center;gap:5px">${icCheck(C.tealDark,15)} แปลงข้อมูล XML สำเร็จ!</span> ดึงข้อมูลครบทุกฟิลด์แล้ว ไม่ต้องกรอกเพิ่มเติม
       <div style="${cardWrap};border-color:rgba(22,234,158,0.3)">
-        <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark}">📄 ข้อมูลจาก XML</div>
+        <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark};display:flex;align-items:center;gap:6px">${icFile(C.tealDark,13)} ข้อมูลจาก XML</div>
         <div style="${cardBody}">
           <div style="${rowStyle}"><span style="color:${C.n600}">ผู้นำเข้า</span><span style="font-weight:700;color:${C.blue}">${data.importer}</span></div>
           <div style="${rowStyle}"><span style="color:${C.n600}">HS Code</span><span style="font-weight:600;color:${C.navy}">${data.hsCode}</span></div>
@@ -270,22 +286,22 @@ export default function Home() {
         </div>
       </div>
       <div style="margin-top:10px">
-        <button onclick="window.__chat?.sendQuick('ดู Preview')" style="${btnPrimary}">👁 ดู Preview และส่งกรม</button>
+        <button onclick="window.__chat?.sendQuick('ดู Preview')" style="${btnPrimary};display:inline-flex;align-items:center;gap:5px">${icCheck(C.teal,13)} ดู Preview และส่งกรม</button>
       </div>`)
   }, [botMsg])
 
   // ── INVOICE OCR + HS ANALYSIS FLOW ──────────────────────────────
   const showInvoiceUpload = useCallback(() => {
     setStep('invoice_upload')
-    botMsg(`<span style="color:${C.tealDark};font-weight:700">🧾 อัปโหลด Invoice เพื่อวิเคราะห์</span>
+    botMsg(`<span style="color:${C.tealDark};font-weight:700;display:inline-flex;align-items:center;gap:5px">${icList(C.tealDark,15)} อัปโหลด Invoice เพื่อวิเคราะห์</span>
       <p style="font-size:12px;color:${C.n600};margin:6px 0 10px">ระบบจะ OCR Invoice → วิเคราะห์ HS Code → แนะนำกรมที่ต้องขอใบอนุญาต → สร้าง RGoods</p>
       <div style="border:2px dashed rgba(22,234,158,0.4);border-radius:12px;padding:20px;text-align:center;background:rgba(22,234,158,0.04)">
-        <div style="font-size:32px;margin-bottom:8px">🧾</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${icUpload(C.tealDark,36)}</div>
         <p style="font-size:13px;font-weight:600;color:${C.tealDark}">คลิกหรือลากไฟล์ Invoice มาวาง</p>
         <p style="font-size:11px;color:${C.n500};margin-top:3px">รองรับ PDF, JPG, PNG, Excel</p>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button onclick="window.__chat?.processInvoice()" style="${btnPrimary};background:linear-gradient(135deg,${C.tealDark},${C.tealMid})">🧠 OCR และวิเคราะห์ Invoice</button>
+        <button onclick="window.__chat?.processInvoice()" style="${btnPrimary};background:linear-gradient(135deg,${C.tealDark},${C.tealMid});display:inline-flex;align-items:center;gap:5px">${icSearch(C.teal,13)} OCR และวิเคราะห์ Invoice</button>
         <button onclick="window.__chat?.spnNotFoundBack()" style="${btnSecondary}">← ย้อนกลับ</button>
       </div>`)
   }, [botMsg])
@@ -329,9 +345,9 @@ export default function Home() {
       </tr>`
     }
 
-    botMsg(`<span style="font-weight:700">🧠 วิเคราะห์ Invoice เสร็จแล้ว</span> — พบรายการสินค้าและวิเคราะห์ HS Code ดังนี้:
+    botMsg(`<span style="font-weight:700;display:inline-flex;align-items:center;gap:5px">${icSearch(C.blue,15)} วิเคราะห์ Invoice เสร็จแล้ว</span> — พบรายการสินค้าและวิเคราะห์ HS Code ดังนี้:
       <div style="${cardWrap}">
-        <div style="${cardHead};background:rgba(100,0,200,0.06);color:#4527A0">🏷 ผลการวิเคราะห์ HS Code</div>
+        <div style="${cardHead};background:rgba(100,0,200,0.06);color:#4527A0;display:flex;align-items:center;gap:5px">${icSearch('#4527A0',13)} ผลการวิเคราะห์ HS Code</div>
         <div style="padding:0">
           <div style="font-size:11px;color:${C.n500};padding:8px 12px 4px">คลิกเลือก HS Code ที่ต้องการใช้</div>
           <table style="width:100%;border-collapse:collapse">
@@ -349,28 +365,28 @@ export default function Home() {
         </div>
       </div>
       <div style="${cardWrap}">
-        <div style="${cardHead};background:rgba(69,39,160,0.06);color:#4527A0">🏛 กรมที่ต้องขออนุญาต (ตาม HS 2941.10.00)</div>
+        <div style="${cardHead};background:rgba(69,39,160,0.06);color:#4527A0;display:flex;align-items:center;gap:5px">${icList('#4527A0',13)} กรมที่ต้องขออนุญาต (ตาม HS 2941.10.00)</div>
         <div style="${cardBody};display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:${C.n50};border:1px solid ${C.n200};border-radius:8px">
-            <div style="width:38px;height:38px;border-radius:8px;background:rgba(21,101,192,0.1);color:#1565C0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏥</div>
+            <div style="width:38px;height:38px;border-radius:8px;background:rgba(21,101,192,0.1);color:#1565C0;display:flex;align-items:center;justify-content:center;flex-shrink:0">${icFile('#1565C0',18)}</div>
             <div>
               <div style="font-size:13px;font-weight:700;color:${C.navy}">สำนักงานคณะกรรมการอาหารและยา (อย.)</div>
-              <div style="font-size:12px;color:${C.n600};margin:2px 0">📜 ใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)</div>
+              <div style="font-size:12px;color:${C.n600};margin:2px 0;display:flex;align-items:center;gap:4px">${icFile(C.n600,12)} ใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)</div>
               <div style="font-size:11px;color:${C.n500}">พ.ร.บ.ยา พ.ศ. 2510</div>
             </div>
           </div>
           <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:${C.n50};border:1px solid ${C.n200};border-radius:8px">
-            <div style="width:38px;height:38px;border-radius:8px;background:rgba(22,234,158,0.15);color:${C.tealDark};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚢</div>
+            <div style="width:38px;height:38px;border-radius:8px;background:rgba(22,234,158,0.15);color:${C.tealDark};display:flex;align-items:center;justify-content:center;flex-shrink:0">${icShip(C.tealDark,18)}</div>
             <div>
               <div style="font-size:13px;font-weight:700;color:${C.navy}">กรมศุลกากร</div>
-              <div style="font-size:12px;color:${C.n600};margin:2px 0">📜 ใบขนสินค้าขาเข้า (กศก.99)</div>
+              <div style="font-size:12px;color:${C.n600};margin:2px 0;display:flex;align-items:center;gap:4px">${icFile(C.n600,12)} ใบขนสินค้าขาเข้า (กศก.99)</div>
               <div style="font-size:11px;color:${C.n500}">พ.ร.บ.ศุลกากร พ.ศ. 2560</div>
             </div>
           </div>
         </div>
       </div>
       <div style="${cardWrap};border-color:rgba(22,234,158,0.3)">
-        <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark}">🧾 ข้อมูลที่ดึงได้จาก Invoice</div>
+        <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark};display:flex;align-items:center;gap:5px">${icList(C.tealDark,13)} ข้อมูลที่ดึงได้จาก Invoice</div>
         <div style="${cardBody}">
           <div style="${rowStyle}"><span style="color:${C.n600}">ผู้นำเข้า</span><span style="font-weight:600;color:${C.navy}">${invData.importer}</span></div>
           <div style="${rowStyle}"><span style="color:${C.n600}">รายละเอียดสินค้า</span><span style="font-weight:600;color:${C.navy}">${invData.goodsDesc}</span></div>
@@ -390,7 +406,7 @@ export default function Home() {
     addMessage({ role:'bot', content:'show_form', isHtml:true })
     setTimeout(() => {
       botMsg(`<div style="display:flex;gap:8px;padding:10px 12px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A;font-size:12px">
-        <span>⚠️</span>
+        <span style="flex-shrink:0;display:flex">${icWarn('#B45309',16)}</span>
         <div>
           <strong style="color:#B45309">พบข้อมูลที่ยังขาด 3 รายการ</strong> กรุณากรอกให้ครบ:
           <div style="display:flex;gap:6px;margin-top:6px">
@@ -405,7 +421,7 @@ export default function Home() {
 
   const showUpload = useCallback(() => {
     setStep('upload')
-    botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin-bottom:8px">📂 กรุณาอัปโหลดเอกสารประกอบ:</p>
+    botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin-bottom:8px;display:flex;align-items:center;gap:5px">${icFolder(C.navy,15)} กรุณาอัปโหลดเอกสารประกอบ:</p>
       <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
         <span style="${badgeAmber}">Invoice</span>
         <span style="${badgeGreen}">COA</span>
@@ -415,26 +431,26 @@ export default function Home() {
         style="width:100%;border-radius:14px;border:2px dashed ${C.n300};background:${C.n50};padding:18px;text-align:center;cursor:pointer;display:block;transition:all .2s"
         onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.04)'"
         onmouseout="this.style.borderColor='${C.n300}';this.style.background='${C.n50}'">
-        <div style="font-size:26px;margin-bottom:5px">☁️</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${icUpload(C.blue,30)}</div>
         <p style="font-size:13px;font-weight:600;color:${C.navy}">คลิกหรือลากไฟล์มาวางที่นี่</p>
         <p style="font-size:11px;color:${C.n500};margin-top:3px">PDF, JPG, PNG, Excel (สูงสุด 20MB)</p>
       </button>
       <button onclick="window.__chat?.startOCRDemo()" style="${btnPrimary};margin-top:10px">
-        🔍 OCR &amp; วิเคราะห์ไฟล์
+        ${icSearch('#fff',13)} OCR &amp; วิเคราะห์ไฟล์
       </button>`)
   }, [botMsg])
 
   const showStatus = useCallback(() => {
     botMsg(`<div style="${cardWrap}">
-      <div style="${cardHead}">📋 สถานะใบอนุญาต</div>
+      <div style="${cardHead};display:flex;align-items:center;gap:5px">${icList(C.navy,13)} สถานะใบอนุญาต</div>
       <div style="${cardBody}">
         <div style="${rowStyle};border-bottom:1px dashed ${C.n200}">
           <span style="color:${C.n600}">HTHM000000003</span>
-          <span style="${badgeGreen}">✓ อนุมัติแล้ว</span>
+          <span style="${badgeGreen};display:inline-flex;align-items:center;gap:3px">${icCheck(C.tealDark,11)} อนุมัติแล้ว</span>
         </div>
         <div style="${rowStyle};border:none">
           <span style="color:${C.n600}">HTHM000000001</span>
-          <span style="${badgeBlue}">⏳ รอการอนุมัติ</span>
+          <span style="${badgeBlue};display:inline-flex;align-items:center;gap:3px">${icSearch(C.blue,11)} รอการอนุมัติ</span>
         </div>
       </div>
     </div>`)
@@ -498,7 +514,7 @@ export default function Home() {
     addMessage({ role:'bot', content:'show_form', isHtml:true })
     setTimeout(() => {
       botMsg(`<div style="display:flex;gap:8px;padding:10px 12px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A;font-size:12px">
-        <span>⚠️</span>
+        <span style="flex-shrink:0;display:flex">${icWarn('#B45309',16)}</span>
         <div>
           <strong style="color:#B45309">พบข้อมูลที่ยังขาด 2 รายการ</strong> กรุณากรอกให้ครบ:
           <div style="display:flex;gap:6px;margin-top:6px">
@@ -519,7 +535,7 @@ export default function Home() {
     if (!formValues.drugRegNo)  missing.push('เลขทะเบียนยา')
     if (missing.length > 0) {
       userMsg('ขอดู Preview')
-      withTyping(() => botMsg(`<span style="color:#C0392B;font-weight:600">❌ ยังไม่สามารถดำเนินการได้ กรุณากรอกข้อมูลที่ขาด: <strong>${missing.join(', ')}</strong></span>`), 300)
+      withTyping(() => botMsg(`<span style="color:#C0392B;font-weight:600;display:inline-flex;align-items:center;gap:5px">${icX('#C0392B',15)} ยังไม่สามารถดำเนินการได้ กรุณากรอกข้อมูลที่ขาด: <strong>${missing.join(', ')}</strong></span>`), 300)
       return
     }
     setShowPreview(true)
@@ -534,14 +550,14 @@ export default function Home() {
     setTimeout(() => {
       setIsTyping(false)
       const refNo = `RG-2568-${Math.floor(Math.random() * 90000 + 10000)}`
-      botMsg(`<span style="color:${C.tealDark};font-weight:700;font-size:13px">✅ ส่งข้อมูลสำเร็จแล้วครับ!</span>
+      botMsg(`<span style="color:${C.tealDark};font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:5px">${icCheck(C.tealDark,15)} ส่งข้อมูลสำเร็จแล้วครับ!</span>
         <div style="${cardWrap};border-color:rgba(22,234,158,0.3)">
           <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark};border-color:rgba(22,234,158,0.3)">ผลการส่งข้อมูลเข้ากรม</div>
           <div style="${cardBody}">
             <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">เลขอ้างอิง</span><span style="font-weight:700;color:${C.blue}">${formData.ref}</span></div>
             <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">เลขใบอนุญาต (ชั่วคราว)</span><span style="font-weight:700;color:${C.blue}">${refNo}</span></div>
             <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">วันที่ส่ง</span><span style="font-weight:600;color:${C.navy}">${new Date().toLocaleDateString('th-TH')}</span></div>
-            <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">สถานะ</span><span style="${badgeBlue}">⏳ รอการอนุมัติ</span></div>
+            <div style="${rowStyle};border-bottom:1px dashed ${C.n200}"><span style="color:${C.n600}">สถานะ</span><span style="${badgeBlue};display:inline-flex;align-items:center;gap:3px">${icSearch(C.blue,11)} รอการอนุมัติ</span></div>
             <div style="${rowStyle};border:none"><span style="color:${C.n600}">คาดว่าอนุมัติ</span><span style="font-weight:600;color:${C.navy}">3-5 วันทำการ</span></div>
           </div>
         </div>

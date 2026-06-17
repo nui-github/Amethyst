@@ -129,7 +129,8 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
           {msg.content === 'show_form' && (
             <>
               <div className="flex items-center gap-2 text-sm font-semibold mb-2" style={{ color: '#0D8F61' }}>
-                ✅ OCR อ่านข้อมูลได้แล้วครับ กรุณาตรวจสอบและกรอกข้อมูลที่ขาด:
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0D8F61" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                OCR อ่านข้อมูลได้แล้วครับ กรุณาตรวจสอบและกรอกข้อมูลที่ขาด:
               </div>
               <FormPanel formValues={formValues} onChange={onFormChange} onPreview={onPreview} />
             </>
@@ -139,8 +140,9 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
           )}
           {msg.content === 'show_full_upload' && (
             <>
-              <p className="text-sm font-semibold mb-1" style={{ color: '#010136' }}>
-                📂 <strong>อัปโหลดเอกสารทั้งหมด</strong> เพื่อให้ระบบ OCR ดึงข้อมูลแทนการค้นหาจาก SPN
+              <p className="text-sm font-semibold mb-1 flex items-center gap-1.5" style={{ color: '#010136' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <strong>อัปโหลดเอกสารทั้งหมด</strong> เพื่อให้ระบบ OCR ดึงข้อมูลแทนการค้นหาจาก SPN
               </p>
               <FullUploadPanel onStartOCR={onFullUploadOCR} />
             </>
