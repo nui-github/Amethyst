@@ -58,6 +58,19 @@ export interface SidebarItem {
   section?: 'main' | 'history' | 'bottom'
 }
 
+// ── SPN list entry (raw data from ShippingNet) ──────────────────────────────
+
+export interface SPNEntry {
+  ref: string          // HTHM000000001
+  customsNo: string    // A012-25680617-00XXX
+  importer: string     // ชื่อผู้นำเข้า
+  goods: string        // รายละเอียดสินค้า
+  hs: string           // HS Code
+  origin: string       // ประเทศต้นทาง
+  date: string         // วันที่ใบขน
+  inQueue?: boolean    // มีในคิวแล้วหรือยัง
+}
+
 // ── Queue / Shipment types ───────────────────────────────────────────────────
 
 export type AgencyKey = 'dld' | 'fda' | 'dft' | 'doa' | 'diw' | 'none'

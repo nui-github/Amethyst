@@ -1,12 +1,13 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import { ChatMessage, UploadSlots } from '@/lib/types'
+import { ChatMessage, UploadSlots, SPNEntry } from '@/lib/types'
 import { TypingIndicator }   from './TypingIndicator'
 import { FormPanel }         from './FormPanel'
 import { FullUploadPanel }   from './FullUploadPanel'
 import { OcrProgress }       from './OcrProgress'
 import { QuickChips }        from './QuickChips'
 import { ConnectPanel }      from './ConnectPanel'
+import { SPNListPanel }      from './SPNListPanel'
 import { User }              from 'lucide-react'
 
 interface ChatAreaProps {
@@ -17,11 +18,13 @@ interface ChatAreaProps {
   formValues: Record<string, string>
   currentStep: string
   pendingRef: string
+  spnEntries: SPNEntry[]
   onFormChange: (key: string, val: string) => void
   onPreview: () => void
   onFullUploadOCR: (slots: UploadSlots) => void
   onQuickSend: (text: string) => void
   onConnected: (ref: string) => void
+  onRequestPermit: (refs: string[]) => void
 }
 
 const WELCOME_CHIPS = [
@@ -48,8 +51,8 @@ function WelcomeMessage({ onQuickSend }: { onQuickSend: (v: string) => void }) {
 
 export function ChatArea({
   messages, isTyping, ocrProgress, ocrStages,
-  formValues, currentStep, pendingRef,
-  onFormChange, onPreview, onFullUploadOCR, onQuickSend, onConnected,
+  formValues, currentStep, pendingRef, spnEntries,
+  onFormChange, onPreview, onFullUploadOCR, onQuickSend, onConnected, onRequestPermit,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
@@ -61,10 +64,10 @@ export function ChatArea({
           key={msg.id} msg={msg}
           ocrProgress={ocrProgress} ocrStages={ocrStages}
           formValues={formValues} currentStep={currentStep}
-          pendingRef={pendingRef}
+          pendingRef={pendingRef} spnEntries={spnEntries}
           onFormChange={onFormChange} onPreview={onPreview}
           onFullUploadOCR={onFullUploadOCR} onQuickSend={onQuickSend}
-          onConnected={onConnected}
+          onConnected={onConnected} onRequestPermit={onRequestPermit}
         />
       ))}
       {isTyping && <TypingIndicator />}
@@ -78,14 +81,16 @@ interface MessageRowProps {
   ocrProgress: number; ocrStages: string[]
   formValues: Record<string, string>; currentStep: string
   pendingRef: string
+  spnEntries: SPNEntry[]
   onFormChange: (k: string, v: string) => void
   onPreview: () => void
   onFullUploadOCR: (slots: UploadSlots) => void
   onQuickSend: (text: string) => void
   onConnected: (ref: string) => void
+  onRequestPermit: (refs: string[]) => void
 }
 
-function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onPreview, onFullUploadOCR, onQuickSend, pendingRef, onConnected }: MessageRowProps) {
+function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onPreview, onFullUploadOCR, onQuickSend, pendingRef, spnEntries, onConnected, onRequestPermit }: MessageRowProps) {
   // User bubble
   if (msg.role === 'user') {
     return (
@@ -110,7 +115,7 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
   }
 
   // Bot bubble — special content types
-  const SPECIALS = ['welcome','ocr_progress','show_form','show_full_upload','show_connect']
+  const SPECIALS = ['welcome','ocr_progress','show_form','show_full_upload','show_connect','show_spn_list']
   return (
     <div className="flex items-end gap-2.5 msg-appear">
       <div
@@ -137,6 +142,9 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
           )}
           {msg.content === 'show_connect' && (
             <ConnectPanel onConnect={() => onConnected(pendingRef)} />
+          )}
+          {msg.content === 'show_spn_list' && (
+            <SPNListPanel entries={spnEntries} onRequestPermit={onRequestPermit} />
           )}
           {msg.content === 'show_full_upload' && (
             <>

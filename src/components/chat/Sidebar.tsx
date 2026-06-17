@@ -8,6 +8,7 @@ import {
 interface SidebarProps {
   activeItem: string
   onSelect: (id: string) => void
+  needsYouCount?: number
 }
 
 const mainItems = [
@@ -39,7 +40,7 @@ const L = {
   histActiveBg: 'rgba(22,234,158,0.10)',
 }
 
-export function Sidebar({ activeItem, onSelect }: SidebarProps) {
+export function Sidebar({ activeItem, onSelect, needsYouCount = 0 }: SidebarProps) {
   return (
     <aside
       className="w-56 flex-shrink-0 flex flex-col"
@@ -82,8 +83,14 @@ export function Sidebar({ activeItem, onSelect }: SidebarProps) {
               onMouseOut={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = L.text } }}
             >
               <Icon size={15} className="flex-shrink-0" />
-              <span className="truncate text-xs font-semibold">{label}</span>
-              {isActive && <ChevronRight size={11} className="ml-auto opacity-60" />}
+              <span className="truncate text-xs font-semibold flex-1">{label}</span>
+              {id === 'queue' && needsYouCount > 0 && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                  style={{ background: '#DC2626', color: '#fff', minWidth: 16, textAlign: 'center' }}>
+                  {needsYouCount}
+                </span>
+              )}
+              {isActive && <ChevronRight size={11} className="flex-shrink-0 opacity-60" />}
             </button>
           )
         })}
