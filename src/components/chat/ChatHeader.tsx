@@ -5,9 +5,10 @@ import { useState } from 'react'
 interface ChatHeaderProps {
   isConnected: boolean
   onDisconnect: () => void
+  onConnectClick: () => void
 }
 
-export function ChatHeader({ isConnected, onDisconnect }: ChatHeaderProps) {
+export function ChatHeader({ isConnected, onDisconnect, onConnectClick }: ChatHeaderProps) {
   const [disconnectHover, setDisconnectHover] = useState(false)
   return (
     <header
@@ -70,18 +71,32 @@ export function ChatHeader({ isConnected, onDisconnect }: ChatHeaderProps) {
           </span>
         </button>
       ) : (
-        <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0"
+        <button
+          onClick={onConnectClick}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full flex-shrink-0 transition-all"
           style={{
             background: 'rgba(153,153,153,0.10)',
             border: '1px solid rgba(153,153,153,0.30)',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(4,99,239,0.08)'
+            e.currentTarget.style.borderColor = 'rgba(4,99,239,0.35)'
+            e.currentTarget.querySelector('span:first-child')!.setAttribute('style', 'width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:#0463EF')
+            e.currentTarget.querySelector('span:last-child')!.setAttribute('style', 'font-size:11px;font-weight:600;white-space:nowrap;color:#0463EF')
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(153,153,153,0.10)'
+            e.currentTarget.style.borderColor = 'rgba(153,153,153,0.30)'
+            e.currentTarget.querySelector('span:first-child')!.setAttribute('style', 'width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:#CCCCCC')
+            e.currentTarget.querySelector('span:last-child')!.setAttribute('style', 'font-size:11px;font-weight:600;white-space:nowrap;color:#999999')
           }}
         >
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#CCCCCC' }} />
           <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: '#999999' }}>
             ยังไม่เชื่อมต่อ SPN
           </span>
-        </div>
+        </button>
       )}
 
       {/* Action icons */}

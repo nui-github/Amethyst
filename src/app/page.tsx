@@ -102,8 +102,28 @@ export default function Home() {
       proceedFromInvoice: () => withTyping(() => showFormFromInvoice(), 700),
       spnNotFoundBack:    () => withTyping(() => spnNotFound(currentRef), 300),
       onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
+      triggerConnect:     () => showConnectPrompt(),
     }
   })
+
+  // ── CONNECT PROMPT (from header pill click) ────────────────────
+  const showConnectPrompt = useCallback(() => {
+    setPendingRef('')
+    withTyping(() => addMessage({ role:'bot', content:'show_connect', isHtml:true }), 300)
+  }, [withTyping, addMessage])
+
+  const showNotConnectedWarning = useCallback(() => {
+    addMessage({ role:'bot', content:`<div style="display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A">
+      <span style="flex-shrink:0;display:flex;margin-top:1px">${icWarn('#B45309',16)}</span>
+      <div>
+        <p style="font-size:13px;font-weight:700;color:#B45309;margin:0 0 4px">ยังไม่ได้เชื่อมต่อ ShippingNet</p>
+        <p style="font-size:12px;color:#92400E;margin:0 0 10px">คำสั่งนี้ต้องใช้ข้อมูลจาก ShippingNet กรุณาเชื่อมต่อก่อนดำเนินการ</p>
+        <button onclick="window.__chat?.triggerConnect()" style="${btnPrimary};padding:7px 14px;font-size:12px;display:inline-flex;align-items:center;gap:5px">
+          เชื่อมต่อ ShippingNet
+        </button>
+      </div>
+    </div>`, isHtml:true })
+  }, [addMessage])
 
   // ── SEND ────────────────────────────────────────────────────────
   const handleSend = useCallback((text: string) => {
@@ -123,9 +143,18 @@ export default function Home() {
     } else if (lower.includes('อัปโหลด') || lower.includes('upload')) {
       withTyping(() => showUpload(), 500)
     } else if (lower.includes('ตรวจสอบสถานะ') || lower.includes('ดูสถานะ')) {
-      withTyping(() => showStatus(), 700)
+      if (!isConnected) {
+        withTyping(() => showNotConnectedWarning(), 400)
+      } else {
+        withTyping(() => showStatus(), 700)
+      }
     } else if (refMatch && step === 'idle') {
-      withTyping(() => fetchSPN(refMatch[0].toUpperCase()), 400)
+      if (!isConnected) {
+        setPendingRef(refMatch[0].toUpperCase())
+        withTyping(() => showNotConnectedWarning(), 400)
+      } else {
+        withTyping(() => fetchSPN(refMatch[0].toUpperCase()), 400)
+      }
     } else {
       withTyping(() => botMsg(
         `ขอโทษครับ ไม่เข้าใจคำสั่ง กรุณาลองใหม่อีกครั้ง
@@ -135,21 +164,22 @@ export default function Home() {
         </div>`
       ), 700)
     }
-  }, [step, isConnected, userMsg, botMsg, withTyping])
+  }, [step, isConnected, userMsg, botMsg, withTyping, showNotConnectedWarning])
 
   // ── CONNECT OPTIONS (after login) ──────────────────────────────
   const showConnectOptions = useCallback((ref: string) => {
     setIsConnected(true)
+    const hasRef = ref.length > 0
     botMsg(`<div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
         ${icCheck('#0D8F61', 20)}
         <div>
           <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">เชื่อมต่อสำเร็จแล้ว!</p>
-          <p style="font-size:11px;color:${C.n500};margin:0">ต้องการดำเนินการอะไรกับใบขน <strong>${ref}</strong>?</p>
+          <p style="font-size:11px;color:${C.n500};margin:0">${hasRef ? `ต้องการดำเนินการอะไรกับใบขน <strong>${ref}</strong>?` : 'ต้องการดำเนินการอะไรต่อไปครับ?'}</p>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <div onclick="window.__chat?.sendQuick('ดูรายการสถานะของ ${ref}')"
+        <div onclick="window.__chat?.sendQuick('ดูรายการสถานะ${hasRef ? `ของ ${ref}` : ''}')"
           style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
           onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.04)'"
           onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
@@ -159,14 +189,14 @@ export default function Home() {
             <p style="font-size:11px;color:${C.n500};margin:0">ดูรายการ RGoods ที่มีอยู่แล้วใน ShippingNet</p>
           </div>
         </div>
-        <div onclick="window.__chat?.sendQuick('สร้าง RGoods ด้วยใบขน Ref : ${ref}')"
+        <div onclick="window.__chat?.sendQuick('สร้าง RGoods${hasRef ? ` ด้วยใบขน Ref : ${ref}` : ''}')"
           style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
           onmouseover="this.style.borderColor='${C.teal}';this.style.background='rgba(22,234,158,0.04)'"
           onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
           <div style="width:36px;height:36px;border-radius:10px;background:rgba(22,234,158,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">${icPlus('#0D8F61',18)}</div>
           <div>
             <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">สร้าง RGoods ใหม่</p>
-            <p style="font-size:11px;color:${C.n500};margin:0">สร้างใบอนุญาตใหม่จากใบขน ${ref}</p>
+            <p style="font-size:11px;color:${C.n500};margin:0">${hasRef ? `สร้างใบอนุญาตใหม่จากใบขน ${ref}` : 'สร้างใบอนุญาตนำเข้าใหม่'}</p>
           </div>
         </div>
       </div>
@@ -573,7 +603,17 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#F2F2F2' }}>
-      <ChatHeader isConnected={isConnected} onDisconnect={() => setIsConnected(false)} />
+      <ChatHeader
+        isConnected={isConnected}
+        onDisconnect={() => {
+          setIsConnected(false)
+          withTyping(() => botMsg(`<div style="display:flex;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2)">
+            ${icX('#DC2626',15)}
+            <span style="font-size:12px;color:#991B1B;font-weight:600">ตัดการเชื่อมต่อ ShippingNet เรียบร้อยแล้ว</span>
+          </div>`), 300)
+        }}
+        onConnectClick={showConnectPrompt}
+      />
       <div className="flex flex-1 overflow-hidden">
       <Sidebar activeItem={sidebarActive} onSelect={setSidebarActive} />
       <div className="flex-1 flex flex-col overflow-hidden">
