@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {
   ChevronLeft, AlertTriangle, CheckCircle2, Mail, Clock,
   FileCheck2, Search, Filter, RotateCcw, Send, Upload, MessageSquare,
-  TrendingUp, Package, Ban,
+  TrendingUp, Package, Ban, Plus,
 } from 'lucide-react'
 import { AGENCY_LABEL, AGENCY_SHORT, STATUS_META } from '@/lib/mock/queue'
 import { OcrProgress } from '@/components/chat/OcrProgress'
@@ -63,34 +63,23 @@ function DashboardStrip({
   return (
     <div className="flex-shrink-0" style={{ background: '#fff', borderBottom: '1px solid #E5E7EB' }}>
       {/* Top bar */}
-      <div className="px-6 pt-5 pb-4 flex items-end justify-between">
+      <div className="px-6 pt-5 pb-4 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl font-bold" style={{ color: '#010136' }}>คิวงานพิธีการ</h1>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: 'rgba(4,99,239,0.08)', color: '#0463EF' }}>
-              AI อัตโนมัติ
-            </span>
+            <h1 className="text-xl font-bold" style={{ color: '#010136' }}>คิวงานขอใบอนุญาต</h1>
           </div>
           <p className="text-xs" style={{ color: '#9CA3AF' }}>{today}</p>
         </div>
         {/* Mini KPI strip */}
-        <div className="flex items-center gap-6">
-          <div className="text-right">
-            <p className="text-2xl font-bold" style={{ color: '#010136' }}>{total}</p>
-            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>รายการทั้งหมด</p>
-          </div>
-          <div className="w-px h-8" style={{ background: '#E5E7EB' }} />
-          <div className="text-right">
-            <p className="text-2xl font-bold" style={{ color: '#10B981' }}>{submitted}</p>
-            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>ยื่นแล้ววันนี้</p>
-          </div>
-          <div className="w-px h-8" style={{ background: '#E5E7EB' }} />
-          <div className="text-right">
-            <p className="text-2xl font-bold" style={{ color: avgConf >= 85 ? '#10B981' : '#F59E0B' }}>{avgConf}%</p>
-            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>ความแม่นยำเฉลี่ย</p>
-          </div>
-        </div>
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+          style={{ background: 'linear-gradient(135deg, #034DBA, #0463EF)', color: '#fff', boxShadow: '0 4px 14px rgba(4,99,239,0.3)' }}
+          onMouseOver={e => { e.currentTarget.style.boxShadow = '0 6px 18px rgba(4,99,239,0.4)' }}
+          onMouseOut={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(4,99,239,0.3)' }}
+        >
+          <Plus size={14} />
+          เพิ่มรายการขอใบอนุญาต
+        </button>
       </div>
 
       {/* Stat cards row */}
@@ -176,13 +165,6 @@ function ListView({
               style={{ color: '#374151' }}
             />
           </div>
-          <button
-            title="ตัวกรอง"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm flex-shrink-0"
-            style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-            <Filter size={13} />
-            {!narrow && 'ตัวกรอง'}
-          </button>
         </div>
       </div>
 
