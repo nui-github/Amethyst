@@ -1,12 +1,29 @@
 'use client'
-import { Bell, Zap, User, Activity } from 'lucide-react'
+import { Bell, Zap, User, Activity, Bot } from 'lucide-react'
 
 export function ChatHeader() {
   return (
     <header
-      className="h-14 flex items-center px-5 gap-4 flex-shrink-0 z-10"
-      style={{ background: '#fff', borderBottom: '1px solid #E0E0E0' }}
+      className="h-14 flex items-center px-4 gap-4 flex-shrink-0 z-10 w-full"
+      style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E8E8' }}
     >
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: 'linear-gradient(135deg, #0463EF 0%, #16EA9E 100%)', boxShadow: '0 3px 12px rgba(4,99,239,0.35)' }}
+        >
+          <Bot size={17} color="#fff" strokeWidth={1.75} />
+        </div>
+        <div>
+          <p className="text-xs font-bold leading-tight" style={{ color: '#010136' }}>ShippingNet</p>
+          <p className="text-[10px] font-medium leading-tight" style={{ color: '#0463EF' }}>Assistant</p>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="w-px h-6 flex-shrink-0" style={{ background: '#E8E8E8' }} />
+
       {/* Title */}
       <div className="flex-1 min-w-0">
         <h1 className="text-sm font-bold truncate" style={{ color: '#010136' }}>
@@ -39,16 +56,16 @@ export function ChatHeader() {
         <button
           className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
           style={{ color: '#999999' }}
-          onMouseOver={e => { e.currentTarget.style.background = '#F0F0F0'; e.currentTarget.style.color = '#0463EF' }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999999' }}
+          onMouseOver={e => { e.currentTarget.style.background = '#E6E9FF'; e.currentTarget.style.color = '#0463EF' }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8892B8' }}
         >
           <Bell size={16} />
         </button>
         <button
           className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-          style={{ color: '#999999' }}
-          onMouseOver={e => { e.currentTarget.style.background = '#F0F0F0'; e.currentTarget.style.color = '#0463EF' }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999999' }}
+          style={{ color: '#8892B8' }}
+          onMouseOver={e => { e.currentTarget.style.background = '#E6E9FF'; e.currentTarget.style.color = '#0463EF' }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8892B8' }}
         >
           <Activity size={16} />
         </button>

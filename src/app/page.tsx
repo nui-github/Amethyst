@@ -511,10 +511,11 @@ export default function Home() {
   }, [formData, userMsg, botMsg])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F0F0' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#F2F2F2' }}>
+      <ChatHeader />
+      <div className="flex flex-1 overflow-hidden">
       <Sidebar activeItem={sidebarActive} onSelect={setSidebarActive} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <ChatHeader />
         <ChatArea
           messages={messages} isTyping={isTyping}
           ocrProgress={ocrProgress} ocrStages={ocrStages}
@@ -523,6 +524,7 @@ export default function Home() {
           onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
         />
         <ChatInput onSend={handleSend} disabled={isTyping} />
+      </div>
       </div>
 
       {showPreview && (

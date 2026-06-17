@@ -52,7 +52,7 @@ export function ChatArea({
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4" style={{ background: '#F0F0F0' }}>
+    <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4" style={{ background: '#F2F2F2' }}>
       {messages.map(msg => (
         <MessageRow
           key={msg.id} msg={msg}
@@ -115,7 +115,7 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
       <div className="max-w-[85%]">
         <div
           className="rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed"
-          style={{ background: '#fff', border: '1px solid #E0E0E0', boxShadow: '0 2px 10px rgba(1,1,54,0.06)', color: '#010136' }}
+          style={{ background: '#fff', border: '1px solid #DDE1F8', boxShadow: '0 2px 10px rgba(4,10,80,0.06)', color: '#010136' }}
         >
           {msg.content === 'welcome' && <WelcomeMessage onQuickSend={onQuickSend} />}
           {msg.content === 'ocr_progress' && <OcrProgress progress={ocrProgress} completedStages={ocrStages} />}

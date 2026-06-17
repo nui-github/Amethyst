@@ -35,13 +35,13 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
   return (
     <div
       className="px-4 py-3 flex gap-3 items-end"
-      style={{ background: '#fff', borderTop: '1px solid #E0E0E0' }}
+      style={{ background: '#FFFFFF', borderTop: '1px solid #E8E8E8' }}
     >
       {/* Input wrapper */}
       <div
         ref={wrapRef}
         className="flex-1 flex items-end gap-2 px-4 py-2.5 rounded-2xl transition-all duration-200"
-        style={{ background: '#F0F0F0', border: '1px solid #E0E0E0' }}
+        style={{ background: '#F2F2F2', border: '1px solid #E0E0E0' }}
         onFocus={e => {
           const el = e.currentTarget
           el.style.borderColor = '#0463EF'
@@ -51,7 +51,7 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
         onBlur={e => {
           const el = e.currentTarget
           el.style.borderColor = '#E0E0E0'
-          el.style.background = '#F0F0F0'
+          el.style.background = '#F2F2F2'
           el.style.boxShadow = 'none'
         }}
       >
