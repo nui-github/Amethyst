@@ -83,15 +83,14 @@ function DashboardStrip({
       </div>
 
       {/* Stat cards row */}
-      <div className="px-6 pb-4 flex gap-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+      <div className="px-6 pb-4 grid gap-3" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
         {/* All card */}
         <button
           onClick={() => onFilter('all')}
-          className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
+          className="flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all w-full"
           style={{
             background: activeFilter === 'all' ? '#010136' : '#F9FAFB',
             border: `1px solid ${activeFilter === 'all' ? '#010136' : '#E5E7EB'}`,
-            minWidth: 110,
           }}
         >
           <Package size={15} style={{ color: activeFilter === 'all' ? '#16EA9E' : '#9CA3AF', flexShrink: 0 }} />
@@ -108,11 +107,10 @@ function DashboardStrip({
             <button
               key={key}
               onClick={() => onFilter(key)}
-              className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all w-full"
               style={{
                 background: isActive ? bg : '#F9FAFB',
                 border: `1px solid ${isActive ? border : '#E5E7EB'}`,
-                minWidth: 130,
                 boxShadow: isActive ? `0 0 0 2px ${dot}30` : 'none',
               }}
             >
