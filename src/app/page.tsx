@@ -54,6 +54,8 @@ export default function Home() {
   const [showPreview, setShowPreview]     = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [currentRef, setCurrentRef]       = useState('')
+  const [isConnected, setIsConnected]     = useState(false)
+  const [pendingRef, setPendingRef]        = useState('')
 
   const addMessage = useCallback((msg: Omit<ChatMessage,'id'|'time'>): ChatMessage => {
     const m: ChatMessage = { ...msg, id: generateId(), time: getTime() }
@@ -72,17 +74,18 @@ export default function Home() {
   // ── Expose to inline HTML buttons ─────────────────────────────
   useEffect(() => {
     (window as any).__chat = {
-      sendQuick:         (t: string) => handleSend(t),
-      triggerUpload:     () => withTyping(() => showUpload(), 300),
-      triggerFullUpload: () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      startOCRDemo:      () => startOCR(),
-      chooseXML:         () => withTyping(() => showXMLUpload(), 300),
-      chooseInvoice:     () => withTyping(() => showInvoiceUpload(), 300),
-      chooseFullUpload:  () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      processXML:        () => withTyping(() => xmlDone(), 2000),
-      processInvoice:    () => withTyping(() => showHsAnalysis(), 2500),
-      proceedFromInvoice:() => withTyping(() => showFormFromInvoice(), 700),
-      spnNotFoundBack:   () => withTyping(() => spnNotFound(currentRef), 300),
+      sendQuick:          (t: string) => handleSend(t),
+      triggerUpload:      () => withTyping(() => showUpload(), 300),
+      triggerFullUpload:  () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      startOCRDemo:       () => startOCR(),
+      chooseXML:          () => withTyping(() => showXMLUpload(), 300),
+      chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
+      chooseFullUpload:   () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      processXML:         () => withTyping(() => xmlDone(), 2000),
+      processInvoice:     () => withTyping(() => showHsAnalysis(), 2500),
+      proceedFromInvoice: () => withTyping(() => showFormFromInvoice(), 700),
+      spnNotFoundBack:    () => withTyping(() => spnNotFound(currentRef), 300),
+      onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
     }
   })
 
@@ -94,7 +97,13 @@ export default function Home() {
     const refMatch = text.match(/HTHM\d+/i)
 
     if (refMatch && (lower.includes('สร้าง') || lower.includes('rgoods'))) {
-      withTyping(() => fetchSPN(refMatch[0].toUpperCase()), 400)
+      const ref = refMatch[0].toUpperCase()
+      if (!isConnected) {
+        setPendingRef(ref)
+        withTyping(() => addMessage({ role:'bot', content:'show_connect', isHtml:true }), 400)
+      } else {
+        withTyping(() => fetchSPN(ref), 400)
+      }
     } else if (lower.includes('อัปโหลด') || lower.includes('upload')) {
       withTyping(() => showUpload(), 500)
     } else if (lower.includes('ตรวจสอบสถานะ') || lower.includes('ดูสถานะ')) {
@@ -110,7 +119,43 @@ export default function Home() {
         </div>`
       ), 700)
     }
-  }, [step, userMsg, botMsg, withTyping])
+  }, [step, isConnected, userMsg, botMsg, withTyping])
+
+  // ── CONNECT OPTIONS (after login) ──────────────────────────────
+  const showConnectOptions = useCallback((ref: string) => {
+    setIsConnected(true)
+    botMsg(`<div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">✅</span>
+        <div>
+          <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">เชื่อมต่อสำเร็จแล้ว!</p>
+          <p style="font-size:11px;color:${C.n500};margin:0">ต้องการดำเนินการอะไรกับใบขน <strong>${ref}</strong>?</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div onclick="window.__chat?.sendQuick('ดูรายการสถานะของ ${ref}')"
+          style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
+          onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.04)'"
+          onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">📋</div>
+          <div>
+            <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">ดูรายการสถานะเดิม</p>
+            <p style="font-size:11px;color:${C.n500};margin:0">ดูรายการ RGoods ที่มีอยู่แล้วใน ShippingNet</p>
+          </div>
+        </div>
+        <div onclick="window.__chat?.sendQuick('สร้าง RGoods ด้วยใบขน Ref : ${ref}')"
+          style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
+          onmouseover="this.style.borderColor='${C.teal}';this.style.background='rgba(22,234,158,0.04)'"
+          onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(22,234,158,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">➕</div>
+          <div>
+            <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">สร้าง RGoods ใหม่</p>
+            <p style="font-size:11px;color:${C.n500};margin:0">สร้างใบอนุญาตใหม่จากใบขน ${ref}</p>
+          </div>
+        </div>
+      </div>
+    </div>`)
+  }, [botMsg])
 
   // ── SPN NOT FOUND ───────────────────────────────────────────────
   const spnNotFound = useCallback((ref: string) => {
@@ -520,8 +565,10 @@ export default function Home() {
           messages={messages} isTyping={isTyping}
           ocrProgress={ocrProgress} ocrStages={ocrStages}
           formValues={formValues} currentStep={step}
+          pendingRef={pendingRef}
           onFormChange={handleFormChange} onPreview={handlePreview}
           onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
+          onConnected={showConnectOptions}
         />
         <ChatInput onSend={handleSend} disabled={isTyping} />
       </div>
