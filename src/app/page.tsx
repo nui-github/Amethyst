@@ -153,6 +153,7 @@ export default function Home() {
       conf: 0,
       stage: 0,
       statusKey: 'needs_you' as const,
+      isNew: true,
       assess: { conf: 0, reason: 'รอ OCR และ AI วิเคราะห์' },
       classify: { agency: 'fda' as const, conf: 0, reason: '', alt: [] },
       draft: { fields: [] },
