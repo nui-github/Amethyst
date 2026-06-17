@@ -211,12 +211,18 @@ addToQueue(newItems)                     // append new Shipment objects
 
 ### QueuePage flow (src/components/queue/QueuePage.tsx)
 ```
-ListView (left panel)
-  ← search filter + status tabs (ทั้งหมด / รอคุณยืนยัน / ร่างอีเมลรอส่ง / ...)
+Header
+  ← title "คิวงานขอใบอนุญาต" + "เพิ่มรายการขอใบอนุญาต" primary button (top-right)
+  ← stat cards: 6-column responsive grid, clickable filter by status
+
+ListView (left panel, width 300px when detail open, full-width otherwise)
+  ← live search input (filters customsNo / customer / goods / hthmRef on keypress)
+  ← each row: selected row highlighted blue-left-border + #EFF6FF bg
   ← each row shows status badge, shipment ref, goods, agency
 
 DetailView (right panel, opens on row click)
   Tabs: อัปโหลด/OCR | การประเมิน | ร่างคำขอ | ร่างอีเมล | ประวัติ
+  Step bar: 8-step progress bar, full-width with flex+minWidth, horizontal scroll when narrow
 
   "อัปโหลด/OCR" tab (visible only when statusKey === 'needs_you')
     → dropzone → click "เริ่ม OCR และวิเคราะห์เอกสาร"
@@ -224,9 +230,13 @@ DetailView (right panel, opens on row click)
     → on complete: updateShipment(id, { draft, conf:88, stage:4, ... })
     → auto-switch to "ร่างคำขอ" tab
 
-  Action bar:
-    "ยืนยันและดำเนินการต่อ" → updateShipment(id, { statusKey:'email_outbox', stage:6 })
-    "ส่งอีเมลหาลูกค้า"       → updateShipment(id, { statusKey:'await_customer', stage:7 })
+  Action bars (per status):
+    needs_you:      "ส่งกลับ AI" + "ยืนยันและดำเนินการต่อ" → email_outbox (stage:6)
+    email_outbox:   "ส่งอีเมลหาลูกค้า" → await_customer (stage:7)
+    await_customer: "แก้ไขเอกสาร" (→ needs_you) + "ลูกค้ายืนยันเอกสารแล้ว"
+                    → after confirm: "ดูพรีวิวเอกสารก่อนยื่นกรม"
+                    → preview modal: all license fields + "ยื่นกรม" / "ยังไม่ยื่นกรม"
+                    → "ยื่นกรม" → submitted (stage:8) + toast notification
 ```
 
 ### Shipment status flow

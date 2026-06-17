@@ -133,8 +133,8 @@ function DashboardStrip({
 // ── List view ────────────────────────────────────────────────────────────────
 
 function ListView({
-  queue, filter, onSelect, narrow,
-}: { queue: Shipment[]; filter: ShipmentStatus | 'all'; onSelect: (id: string) => void; narrow?: boolean }) {
+  queue, filter, onSelect, narrow, selectedId,
+}: { queue: Shipment[]; filter: ShipmentStatus | 'all'; onSelect: (id: string) => void; narrow?: boolean; selectedId?: string | null }) {
   const [search, setSearch] = useState('')
 
   const rows = queue.filter(s => {
@@ -184,9 +184,13 @@ function ListView({
           <button
             key={s.id} onClick={() => onSelect(s.id)}
             className="w-full text-left px-5 py-3.5 flex items-start gap-3 transition-colors"
-            style={{ borderBottom: '1px solid #F3F4F6' }}
-            onMouseOver={e => { e.currentTarget.style.background = '#F9FAFB' }}
-            onMouseOut={e => { e.currentTarget.style.background = 'transparent' }}
+            style={{
+              borderBottom: '1px solid #F3F4F6',
+              background: selectedId === s.id ? '#EFF6FF' : 'transparent',
+              borderLeft: selectedId === s.id ? '3px solid #0463EF' : '3px solid transparent',
+            }}
+            onMouseOver={e => { if (selectedId !== s.id) e.currentTarget.style.background = '#F9FAFB' }}
+            onMouseOut={e => { e.currentTarget.style.background = selectedId === s.id ? '#EFF6FF' : 'transparent' }}
           >
             <div className="flex-shrink-0 w-1 h-11 rounded-full mt-0.5" style={{ background: STATUS_META[s.statusKey].dot }} />
             <div className="flex-1 min-w-0">
@@ -236,11 +240,17 @@ function DetailView({
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const { ocrProgress, ocrStages, isOCRing, startOCR } = useOCRFlow()
   const [ocrDone, setOcrDone] = useState(false)
+  const [customerConfirmed, setCustomerConfirmed] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     setActiveTab(shipment.draft.fields.length === 0 && shipment.statusKey === 'needs_you' ? 'upload' : 'assess')
     setFormValues({})
     setOcrDone(false)
+    setCustomerConfirmed(false)
+    setShowPreview(false)
+    setToast(null)
   }, [shipment.id])
 
   const handleOCR = async () => {
@@ -294,7 +304,7 @@ function DetailView({
   ]
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Header */}
       <div className="px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         <div className="flex items-center gap-3 mb-3">
@@ -325,15 +335,17 @@ function DetailView({
         </div>
 
         {/* Progress steps */}
-        <div className="flex items-center gap-1 mt-4 overflow-x-auto pb-1">
+        <div className="mt-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center" style={{ minWidth: 520 }}>
           {STAGE_LABELS.slice(1).map((label, i) => {
             const step = i + 1
             const done = step < shipment.stage
             const active = step === shipment.stage
+            const isLast = i === 7
             return (
-              <div key={step} className="flex items-center gap-1 flex-shrink-0">
-                <div className="flex flex-col items-center gap-0.5">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
+              <div key={step} className="flex items-center" style={{ flex: isLast ? '0 0 auto' : '1 1 0', minWidth: 0 }}>
+                <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
                     style={{ background: done ? '#10B981' : active ? '#0463EF' : '#E5E7EB', color: done || active ? '#fff' : '#9CA3AF' }}>
                     {done ? '✓' : step}
                   </div>
@@ -341,10 +353,11 @@ function DetailView({
                     {label}
                   </span>
                 </div>
-                {i < 7 && <div className="w-4 h-px flex-shrink-0 mb-3" style={{ background: done ? '#10B981' : '#E5E7EB' }} />}
+                {!isLast && <div className="flex-1 h-px mx-1 mb-3" style={{ background: done ? '#10B981' : '#E5E7EB', minWidth: 8 }} />}
               </div>
             )
           })}
+          </div>
         </div>
       </div>
 
@@ -361,7 +374,7 @@ function DetailView({
       )}
 
       {/* Tabs */}
-      <div className="flex gap-0 px-6 mt-4 flex-shrink-0 overflow-x-auto" style={{ borderBottom: '1px solid #E5E7EB' }}>
+      <div className="flex gap-0 px-6 mt-4 flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className="px-4 py-2 text-xs font-semibold whitespace-nowrap"
@@ -500,10 +513,6 @@ function DetailView({
                     {shipment.email.body}
                   </div>
                 </div>
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white mt-2"
-                  style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
-                  <Send size={14} /> ส่งอีเมล
-                </button>
               </div>
             )}
           </Section>
@@ -558,6 +567,97 @@ function DetailView({
             style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
             <Send size={14} /> ส่งอีเมลหาลูกค้า
           </button>
+        </div>
+      )}
+
+      {shipment.statusKey === 'await_customer' && (
+        <div className="flex-shrink-0 px-6 py-4 flex gap-2" style={{ borderTop: '1px solid #E5E7EB', background: '#fff' }}>
+          <button
+            onClick={() => { updateShipment(shipment.id, { statusKey: 'needs_you', stage: 1 }); setCustomerConfirmed(false) }}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold flex-shrink-0"
+            style={{ background: '#F3F4F6', color: '#6B7280' }}>
+            <RotateCcw size={14} /> แก้ไขเอกสาร
+          </button>
+          {!customerConfirmed ? (
+            <button
+              onClick={() => setCustomerConfirmed(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
+              <CheckCircle2 size={14} /> ลูกค้ายืนยันเอกสารแล้ว
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowPreview(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
+              <FileCheck2 size={14} /> ดูพรีวิวเอกสารก่อนยื่นกรม
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Preview modal */}
+      {showPreview && (
+        <div className="absolute inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.4)' }}>
+          <div className="w-full rounded-t-2xl flex flex-col" style={{ background: '#fff', maxHeight: '80%' }}>
+            <div className="px-5 pt-5 pb-3 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: '#010136' }}>พรีวิวเอกสารก่อนยื่นกรม</p>
+                <p className="text-[10px] mt-0.5" style={{ color: '#9CA3AF' }}>{shipment.customsNo}</p>
+              </div>
+              <button onClick={() => setShowPreview(false)} className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#F3F4F6', color: '#6B7280' }}>✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+              <Section title="ข้อมูลผู้นำเข้า">
+                <div className="space-y-1">
+                  <Row label="ผู้ขออนุญาต" value={shipment.customer} />
+                  <Row label="หน่วยงาน" value={AGENCY_LABEL[shipment.agency] ?? '—'} />
+                  <Row label="เลขใบขน" value={shipment.customsNo} highlight />
+                </div>
+              </Section>
+              <Section title="ข้อมูลสินค้า">
+                <div className="space-y-1">
+                  <Row label="ชื่อสินค้า" value={shipment.goods} />
+                  <Row label="HS Code" value={shipment.hs} />
+                  <Row label="ประเทศต้นทาง" value={shipment.origin} />
+                </div>
+              </Section>
+              {shipment.draft.fields.length > 0 && (
+                <Section title="ข้อมูลจากเอกสาร OCR">
+                  <div className="space-y-1">
+                    {shipment.draft.fields.map(f => <Row key={f.label} label={f.label} value={f.value} />)}
+                  </div>
+                </Section>
+              )}
+            </div>
+            <div className="flex-shrink-0 px-5 py-4 flex gap-2" style={{ borderTop: '1px solid #E5E7EB' }}>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                ยังไม่ยื่นกรม
+              </button>
+              <button
+                onClick={() => {
+                  updateShipment(shipment.id, { statusKey: 'submitted', stage: 8 })
+                  setShowPreview(false)
+                  setToast('ยื่นเอกสารถึงกรมเรียบร้อยแล้ว')
+                  setTimeout(() => setToast(null), 3000)
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
+                <CheckCircle2 size={14} /> ยื่นกรม
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg flex items-center gap-2 whitespace-nowrap"
+          style={{ background: 'linear-gradient(135deg,#0D8F61,#16EA9E)' }}>
+          <CheckCircle2 size={14} /> {toast}
         </div>
       )}
     </div>
@@ -626,7 +726,7 @@ export function QueuePage({ queue, updateShipment, initialActiveId, onNavigateCh
             transition: 'width 0.2s',
             flexShrink: 0,
           }}>
-          <ListView queue={queue} filter={filter} onSelect={setActiveId} narrow={!!selected} />
+          <ListView queue={queue} filter={filter} onSelect={setActiveId} narrow={!!selected} selectedId={activeId} />
         </div>
 
         {/* Detail panel */}
