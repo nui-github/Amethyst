@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react'
 import {
   ChevronLeft, AlertTriangle, CheckCircle2, Mail, Clock,
   FileCheck2, Search, Filter, RotateCcw, Send, Upload, MessageSquare,
+  TrendingUp, Package, Ban,
 } from 'lucide-react'
 import { AGENCY_LABEL, AGENCY_SHORT, STATUS_META } from '@/lib/mock/queue'
 import { OcrProgress } from '@/components/chat/OcrProgress'
-import { FormPanel }   from '@/components/chat/FormPanel'
 import { useOCRFlow }  from '@/hooks/useOCRFlow'
 import type { Shipment, ShipmentStatus, DraftField } from '@/lib/types'
 
@@ -42,13 +42,112 @@ function ConfBar({ val, size = 'md' }: { val: number; size?: 'sm' | 'md' }) {
   )
 }
 
+// ── Dashboard Strip ───────────────────────────────────────────────────────────
+
+const STAT_CARDS = [
+  { key: 'needs_you'      as ShipmentStatus, label: 'รอคุณยืนยัน',       icon: AlertTriangle, iconColor: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', dot: '#F59E0B' },
+  { key: 'email_outbox'   as ShipmentStatus, label: 'ร่างอีเมลรอส่ง',    icon: Mail,          iconColor: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', dot: '#3B82F6' },
+  { key: 'await_customer' as ShipmentStatus, label: 'รอลูกค้ายืนยัน',    icon: Clock,         iconColor: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', text: '#6D28D9', dot: '#7C3AED' },
+  { key: 'submitted'      as ShipmentStatus, label: 'ยื่นกรมแล้ว',        icon: CheckCircle2,  iconColor: '#10B981', bg: '#ECFDF5', border: '#BBF7D0', text: '#065F46', dot: '#10B981' },
+  { key: 'no_permit'      as ShipmentStatus, label: 'ไม่ต้องขอใบอนุญาต', icon: Ban,           iconColor: '#9CA3AF', bg: '#F3F4F6', border: '#E5E7EB', text: '#6B7280', dot: '#9CA3AF' },
+]
+
+function DashboardStrip({
+  queue, activeFilter, onFilter,
+}: { queue: Shipment[]; activeFilter: ShipmentStatus | 'all'; onFilter: (k: ShipmentStatus | 'all') => void }) {
+  const today = new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const submitted = queue.filter(s => s.statusKey === 'submitted').length
+  const total     = queue.length
+  const avgConf   = total ? Math.round(queue.reduce((s, q) => s + q.conf, 0) / total) : 0
+
+  return (
+    <div className="flex-shrink-0" style={{ background: '#fff', borderBottom: '1px solid #E5E7EB' }}>
+      {/* Top bar */}
+      <div className="px-6 pt-5 pb-4 flex items-end justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-xl font-bold" style={{ color: '#010136' }}>คิวงานพิธีการ</h1>
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+              style={{ background: 'rgba(4,99,239,0.08)', color: '#0463EF' }}>
+              AI อัตโนมัติ
+            </span>
+          </div>
+          <p className="text-xs" style={{ color: '#9CA3AF' }}>{today}</p>
+        </div>
+        {/* Mini KPI strip */}
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <p className="text-2xl font-bold" style={{ color: '#010136' }}>{total}</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>รายการทั้งหมด</p>
+          </div>
+          <div className="w-px h-8" style={{ background: '#E5E7EB' }} />
+          <div className="text-right">
+            <p className="text-2xl font-bold" style={{ color: '#10B981' }}>{submitted}</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>ยื่นแล้ววันนี้</p>
+          </div>
+          <div className="w-px h-8" style={{ background: '#E5E7EB' }} />
+          <div className="text-right">
+            <p className="text-2xl font-bold" style={{ color: avgConf >= 85 ? '#10B981' : '#F59E0B' }}>{avgConf}%</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>ความแม่นยำเฉลี่ย</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat cards row */}
+      <div className="px-6 pb-4 flex gap-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* All card */}
+        <button
+          onClick={() => onFilter('all')}
+          className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
+          style={{
+            background: activeFilter === 'all' ? '#010136' : '#F9FAFB',
+            border: `1px solid ${activeFilter === 'all' ? '#010136' : '#E5E7EB'}`,
+            minWidth: 110,
+          }}
+        >
+          <Package size={15} style={{ color: activeFilter === 'all' ? '#16EA9E' : '#9CA3AF', flexShrink: 0 }} />
+          <div className="text-left">
+            <p className="text-lg font-bold leading-none" style={{ color: activeFilter === 'all' ? '#fff' : '#010136' }}>{total}</p>
+            <p className="text-[10px] mt-0.5" style={{ color: activeFilter === 'all' ? '#8080A5' : '#9CA3AF' }}>ทั้งหมด</p>
+          </div>
+        </button>
+
+        {STAT_CARDS.map(({ key, label, icon: Icon, iconColor, bg, border, text, dot }) => {
+          const count = queue.filter(s => s.statusKey === key).length
+          const isActive = activeFilter === key
+          return (
+            <button
+              key={key}
+              onClick={() => onFilter(key)}
+              className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
+              style={{
+                background: isActive ? bg : '#F9FAFB',
+                border: `1px solid ${isActive ? border : '#E5E7EB'}`,
+                minWidth: 130,
+                boxShadow: isActive ? `0 0 0 2px ${dot}30` : 'none',
+              }}
+            >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: isActive ? bg : '#F0F0F0' }}>
+                <Icon size={14} style={{ color: isActive ? iconColor : '#9CA3AF' }} />
+              </div>
+              <div className="text-left">
+                <p className="text-lg font-bold leading-none" style={{ color: isActive ? text : '#374151' }}>{count}</p>
+                <p className="text-[10px] mt-0.5 whitespace-nowrap" style={{ color: isActive ? text : '#9CA3AF' }}>{label}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── List view ────────────────────────────────────────────────────────────────
 
 function ListView({
   queue, filter, onSelect,
 }: { queue: Shipment[]; filter: ShipmentStatus | 'all'; onSelect: (id: string) => void }) {
-  const needs  = queue.filter(s => s.statusKey === 'needs_you').length
-  const outbox = queue.filter(s => s.statusKey === 'email_outbox').length
   const [search, setSearch] = useState('')
 
   const rows = queue.filter(s => {
@@ -57,6 +156,7 @@ function ListView({
     const q = search.toLowerCase()
     return (
       s.id.toLowerCase().includes(q) ||
+      s.customsNo.toLowerCase().includes(q) ||
       s.customer.toLowerCase().includes(q) ||
       s.goods.toLowerCase().includes(q) ||
       (s.hthmRef ?? '').toLowerCase().includes(q)
@@ -65,28 +165,9 @@ function ListView({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 pt-6 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-bold" style={{ color: '#010136' }}>คิวงานพิธีการ</h2>
-            <p className="text-xs" style={{ color: '#999' }}>วันนี้ {queue.length} รายการ · ประมวลผลโดย AI อัตโนมัติ</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {needs > 0 && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
-                style={{ background: '#FFFBEB', color: '#B45309', border: '1px solid #FDE68A' }}>
-                <AlertTriangle size={11} /> {needs} รอคุณ
-              </span>
-            )}
-            {outbox > 0 && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
-                style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE' }}>
-                <Mail size={11} /> {outbox} ร่างอีเมล
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-3">
+      {/* Search bar */}
+      <div className="px-5 py-3 flex-shrink-0" style={{ borderBottom: '1px solid #F3F4F6' }}>
+        <div className="flex gap-2">
           <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
             <Search size={13} style={{ color: '#9CA3AF', flexShrink: 0 }} />
             <input
@@ -95,13 +176,21 @@ function ListView({
               style={{ color: '#374151' }}
             />
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm"
+          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm flex-shrink-0"
             style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#6B7280' }}>
             <Filter size={13} /> ตัวกรอง
           </button>
         </div>
       </div>
 
+      {/* Count label */}
+      <div className="px-5 py-2 flex-shrink-0">
+        <p className="text-[11px]" style={{ color: '#9CA3AF' }}>
+          {rows.length} รายการ{filter !== 'all' ? ` · ${FILTERS.find(f => f.key === filter)?.label}` : ''}
+        </p>
+      </div>
+
+      {/* Rows */}
       <div className="flex-1 overflow-y-auto">
         {rows.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 gap-2" style={{ color: '#9CA3AF' }}>
@@ -111,27 +200,29 @@ function ListView({
         ) : rows.map(s => (
           <button
             key={s.id} onClick={() => onSelect(s.id)}
-            className="w-full text-left px-6 py-4 flex items-start gap-4 hover:bg-blue-50 transition-colors"
+            className="w-full text-left px-5 py-3.5 flex items-start gap-3 transition-colors"
             style={{ borderBottom: '1px solid #F3F4F6' }}
+            onMouseOver={e => { e.currentTarget.style.background = '#F9FAFB' }}
+            onMouseOut={e => { e.currentTarget.style.background = 'transparent' }}
           >
-            <div className="flex-shrink-0 w-1 h-12 rounded-full mt-0.5" style={{ background: STATUS_META[s.statusKey].dot }} />
+            <div className="flex-shrink-0 w-1 h-11 rounded-full mt-0.5" style={{ background: STATUS_META[s.statusKey].dot }} />
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-sm font-bold" style={{ color: '#010136' }}>{s.customsNo}</span>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-xs font-bold" style={{ color: '#010136' }}>{s.customsNo}</span>
                 {s.hthmRef && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
                     {s.hthmRef}
                   </span>
                 )}
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#F3F4F6', color: '#6B7280' }}>
                   {AGENCY_SHORT[s.agency]}
                 </span>
               </div>
-              <p className="text-xs truncate mb-1" style={{ color: '#374151' }}>{s.customer}</p>
-              <p className="text-xs truncate" style={{ color: '#9CA3AF' }}>{s.goods}</p>
+              <p className="text-[11px] truncate mb-0.5" style={{ color: '#374151' }}>{s.customer}</p>
+              <p className="text-[11px] truncate" style={{ color: '#9CA3AF' }}>{s.goods}</p>
             </div>
             <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-              <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                 style={{ background: STATUS_META[s.statusKey].bg, color: STATUS_META[s.statusKey].text }}>
                 <StatusIcon s={s.statusKey} />
                 {STATUS_META[s.statusKey].label}
@@ -163,7 +254,6 @@ function DetailView({
   const { ocrProgress, ocrStages, isOCRing, startOCR } = useOCRFlow()
   const [ocrDone, setOcrDone] = useState(false)
 
-  // reset tab when switching shipments
   useEffect(() => {
     setActiveTab(shipment.draft.fields.length === 0 && shipment.statusKey === 'needs_you' ? 'upload' : 'assess')
     setFormValues({})
@@ -172,7 +262,6 @@ function DetailView({
 
   const handleOCR = async () => {
     const result = await startOCR([])
-    // populate draft fields from OCR result
     const fields: DraftField[] = [
       { label: 'Invoice No.', value: result.invoiceNo ?? '' },
       { label: 'วันที่ Invoice', value: result.invoiceDate ?? '' },
@@ -223,7 +312,7 @@ function DetailView({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Breadcrumb + status */}
+      {/* Header */}
       <div className="px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         <div className="flex items-center gap-3 mb-3">
           <button onClick={onBack} className="flex items-center gap-1 text-xs" style={{ color: '#6B7280' }}>
@@ -525,45 +614,49 @@ export function QueuePage({ queue, updateShipment, initialActiveId, onNavigateCh
   const [filter, setFilter] = useState<ShipmentStatus | 'all'>('all')
   const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null)
 
-  // sync when initialActiveId changes (e.g. navigating from chat)
   useEffect(() => {
     if (initialActiveId) setActiveId(initialActiveId)
   }, [initialActiveId])
 
   const selected = activeId ? queue.find(s => s.id === activeId) ?? null : null
 
-  return (
-    <div className="flex h-full" style={{ background: '#F9FAFB' }}>
-      {/* Sidebar filter */}
-      <div className="w-48 flex-shrink-0 h-full overflow-y-auto py-4" style={{ borderRight: '1px solid #E5E7EB', background: '#fff' }}>
-        <p className="px-4 text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CA3AF' }}>สถานะ</p>
-        {FILTERS.map(f => {
-          const count = f.key === 'all' ? queue.length : queue.filter(s => s.statusKey === f.key).length
-          return (
-            <button key={f.key} onClick={() => { setFilter(f.key); setActiveId(null) }}
-              className="w-full flex items-center justify-between px-4 py-2 text-xs text-left"
-              style={{
-                background: filter === f.key ? '#EFF6FF' : 'transparent',
-                color: filter === f.key ? '#1D4ED8' : '#6B7280',
-                fontWeight: filter === f.key ? 600 : 400,
-                borderRight: filter === f.key ? '2px solid #0463EF' : '2px solid transparent',
-              }}>
-              {f.label}
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: filter === f.key ? '#DBEAFE' : '#F3F4F6', color: filter === f.key ? '#1D4ED8' : '#9CA3AF' }}>
-                {count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+  const handleFilter = (k: ShipmentStatus | 'all') => {
+    setFilter(k)
+    setActiveId(null)
+  }
 
-      {/* Main panel */}
-      <div className="flex-1 min-w-0 h-full overflow-hidden">
-        {selected
-          ? <DetailView shipment={selected} onBack={() => setActiveId(null)} onNavigateChat={onNavigateChat} updateShipment={updateShipment} />
-          : <ListView queue={queue} filter={filter} onSelect={setActiveId} />
-        }
+  return (
+    <div className="flex flex-col h-full" style={{ background: '#F9FAFB' }}>
+      {/* Dashboard strip — only visible in list view */}
+      {!selected && (
+        <DashboardStrip queue={queue} activeFilter={filter} onFilter={handleFilter} />
+      )}
+
+      {/* Content */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left list panel */}
+        <div className="flex flex-col h-full overflow-hidden"
+          style={{
+            width: selected ? 300 : '100%',
+            borderRight: selected ? '1px solid #E5E7EB' : 'none',
+            background: '#fff',
+            transition: 'width 0.2s',
+            flexShrink: 0,
+          }}>
+          <ListView queue={queue} filter={filter} onSelect={setActiveId} />
+        </div>
+
+        {/* Detail panel */}
+        {selected && (
+          <div className="flex-1 min-w-0 h-full overflow-hidden" style={{ background: '#fff' }}>
+            <DetailView
+              shipment={selected}
+              onBack={() => setActiveId(null)}
+              onNavigateChat={onNavigateChat}
+              updateShipment={updateShipment}
+            />
+          </div>
+        )}
       </div>
     </div>
   )
