@@ -79,7 +79,7 @@ export default function Home() {
   const [isConnected, setIsConnected]     = useState(false)
   const [pendingRef, setPendingRef]        = useState('')
 
-  const needsYouCount = queue.filter(s => s.statusKey === 'needs_you').length
+  const needsYouCount = queue.filter(s => s.isNew === true).length
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])

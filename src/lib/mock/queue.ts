@@ -3,6 +3,7 @@ import type { Shipment } from '@/lib/types'
 export const MOCK_QUEUE: Shipment[] = [
   {
     id: 'IMP-68-008912',
+    isNew: true,
     hthmRef: 'HTHM000000001',
     customsNo: 'A012-25680617-00891',
     type: 'IMP',
@@ -78,6 +79,7 @@ export const MOCK_QUEUE: Shipment[] = [
 
   {
     id: 'IMP-68-008915',
+    isNew: true,
     hthmRef: 'HTHM000000002',
     customsNo: 'A012-25680617-00915',
     type: 'IMP',

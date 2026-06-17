@@ -196,6 +196,13 @@ function ListView({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-xs font-bold" style={{ color: '#010136' }}>{s.customsNo}</span>
+                {s.isNew && (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: '#DBEAFE', color: '#1D4ED8' }}>
+                    <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#0463EF' }} />
+                    ใหม่
+                  </span>
+                )}
                 {s.hthmRef && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
                     {s.hthmRef}
@@ -726,7 +733,14 @@ export function QueuePage({ queue, updateShipment, initialActiveId, onNavigateCh
             transition: 'width 0.2s',
             flexShrink: 0,
           }}>
-          <ListView queue={queue} filter={filter} onSelect={setActiveId} narrow={!!selected} selectedId={activeId} />
+          <ListView
+            queue={queue} filter={filter} narrow={!!selected} selectedId={activeId}
+            onSelect={id => {
+              setActiveId(id)
+              const item = queue.find(s => s.id === id)
+              if (item?.isNew) updateShipment(id, { isNew: false })
+            }}
+          />
         </div>
 
         {/* Detail panel */}
