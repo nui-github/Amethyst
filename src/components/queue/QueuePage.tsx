@@ -146,8 +146,8 @@ function DashboardStrip({
 // ── List view ────────────────────────────────────────────────────────────────
 
 function ListView({
-  queue, filter, onSelect,
-}: { queue: Shipment[]; filter: ShipmentStatus | 'all'; onSelect: (id: string) => void }) {
+  queue, filter, onSelect, narrow,
+}: { queue: Shipment[]; filter: ShipmentStatus | 'all'; onSelect: (id: string) => void; narrow?: boolean }) {
   const [search, setSearch] = useState('')
 
   const rows = queue.filter(s => {
@@ -176,9 +176,12 @@ function ListView({
               style={{ color: '#374151' }}
             />
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm flex-shrink-0"
+          <button
+            title="ตัวกรอง"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm flex-shrink-0"
             style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-            <Filter size={13} /> ตัวกรอง
+            <Filter size={13} />
+            {!narrow && 'ตัวกรอง'}
           </button>
         </div>
       </div>
@@ -643,7 +646,7 @@ export function QueuePage({ queue, updateShipment, initialActiveId, onNavigateCh
             transition: 'width 0.2s',
             flexShrink: 0,
           }}>
-          <ListView queue={queue} filter={filter} onSelect={setActiveId} />
+          <ListView queue={queue} filter={filter} onSelect={setActiveId} narrow={!!selected} />
         </div>
 
         {/* Detail panel */}
