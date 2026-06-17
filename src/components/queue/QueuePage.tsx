@@ -117,7 +117,7 @@ function ListView({
             <div className="flex-shrink-0 w-1 h-12 rounded-full mt-0.5" style={{ background: STATUS_META[s.statusKey].dot }} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-sm font-bold" style={{ color: '#010136' }}>{s.id}</span>
+                <span className="text-sm font-bold" style={{ color: '#010136' }}>{s.customsNo}</span>
                 {s.hthmRef && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
                     {s.hthmRef}
@@ -239,7 +239,7 @@ function DetailView({
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-base font-bold" style={{ color: '#010136' }}>{shipment.id}</h2>
+              <h2 className="text-base font-bold" style={{ color: '#010136' }}>{shipment.customsNo}</h2>
               <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
                 style={{ background: meta.bg, color: meta.text }}>
                 <StatusIcon s={shipment.statusKey} />

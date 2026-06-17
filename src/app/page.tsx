@@ -4,12 +4,13 @@ import { Sidebar }    from '@/components/chat/Sidebar'
 import { ChatHeader } from '@/components/chat/ChatHeader'
 import { ChatArea }   from '@/components/chat/ChatArea'
 import { ChatInput }  from '@/components/chat/ChatInput'
+import { QuickActionBar } from '@/components/chat/QuickActionBar'
 import { PreviewModal, ConfirmModal } from '@/components/chat/Modals'
 import { QueuePage } from '@/components/queue/QueuePage'
 import { ChatMessage, ChatStep, FormData, UploadSlots, Shipment, SPNEntry } from '@/lib/types'
 import { generateId, getTime } from '@/lib/utils'
 import { fetchSPN as fetchSPNApi } from '@/lib/api/spn'
-import { MOCK_QUEUE } from '@/lib/mock/queue'
+import { MOCK_QUEUE, STATUS_META, AGENCY_SHORT } from '@/lib/mock/queue'
 import { MOCK_SPN_LIST } from '@/lib/mock/spn_list'
 import { useOCRFlow, type OCRResult } from '@/hooks/useOCRFlow'
 
@@ -264,16 +265,6 @@ export default function Home() {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <div onclick="window.__chat?.sendQuick('ดูรายการสถานะ${hasRef ? `ของ ${ref}` : ''}')"
-          style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
-          onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.04)'"
-          onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0">${icList('#0463EF',18)}</div>
-          <div>
-            <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">ดูรายการสถานะเดิม</p>
-            <p style="font-size:11px;color:${C.n500};margin:0">ดูรายการ RGoods ที่มีอยู่แล้วใน ShippingNet</p>
-          </div>
-        </div>
         <div onclick="window.__chat?.sendQuick('สร้าง RGoods${hasRef ? ` ด้วยใบขน Ref : ${ref}` : ''}')"
           style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .15s"
           onmouseover="this.style.borderColor='${C.teal}';this.style.background='rgba(22,234,158,0.04)'"
@@ -571,6 +562,39 @@ export default function Home() {
     </div>`)
   }, [botMsg])
 
+  // ── QUEUE STATUS IN CHAT ────────────────────────────────────────
+  const showQueueStatusInChat = useCallback(() => {
+    userMsg('ดูสถานะใบขน')
+    const rows = queue.map(s => {
+      const meta = STATUS_META[s.statusKey] ?? { label: s.statusKey, bg: '#F3F4F6', text: '#666', dot: '#999' }
+      const agency = AGENCY_SHORT[s.agency] ?? '—'
+      return `<div onclick="window.__chat?.goToQueue('${s.id}')"
+        style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid ${C.n100};cursor:pointer;transition:.15s;border-radius:8px"
+        onmouseover="this.style.background='rgba(4,99,239,0.04)'"
+        onmouseout="this.style.background='transparent'">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;font-weight:700;color:${C.blue}">${s.customsNo}</span>
+            <span style="font-size:10px;color:${C.n500};background:${C.n100};padding:1px 6px;border-radius:4px">${agency}</span>
+          </div>
+          <p style="font-size:11px;color:${C.n600};margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px">${s.goods}</p>
+        </div>
+        <span style="font-size:10px;font-weight:600;color:${meta.text};background:${meta.bg};padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:8px">${meta.label}</span>
+      </div>`
+    }).join('')
+    botMsg(`<div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        ${icList(C.navy, 14)}
+        <span style="font-size:13px;font-weight:700;color:${C.navy}">สถานะคิวงานทั้งหมด</span>
+        <span style="font-size:10px;color:${C.n500};background:${C.n100};padding:2px 8px;border-radius:20px">${queue.length} รายการ</span>
+      </div>
+      <div style="border:1px solid ${C.n200};border-radius:10px;overflow:hidden">
+        ${rows}
+      </div>
+      <p style="font-size:10px;color:${C.n500};margin-top:6px">กดที่รายการเพื่อดูรายละเอียดในหน้าคิวงาน</p>
+    </div>`)
+  }, [queue, botMsg, userMsg])
+
   // ── OCR ─────────────────────────────────────────────────────────
   const startOCR = useCallback((files: { name: string }[] = []) => {
     userMsg(files.length > 0 ? `ส่งไฟล์ ${files.length} ไฟล์เพื่อ OCR` : 'ส่งไฟล์ 3 ไฟล์เพื่อ OCR')
@@ -703,6 +727,12 @@ export default function Home() {
             onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
             onConnected={showConnectOptions}
             onRequestPermit={addToQueueFromChat}
+          />
+          <QuickActionBar
+            onCreateRGoods={() => handleSend('สร้าง RGoods')}
+            onShowQueueStatus={showQueueStatusInChat}
+            onGoToQueue={() => setSidebarActive('queue')}
+            onUpload={() => handleSend('upload เอกสาร Invoice')}
           />
           <ChatInput onSend={handleSend} disabled={isTyping} />
         </div>

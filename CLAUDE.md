@@ -69,6 +69,7 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 - **Sidebar**: no collapse, fixed width `w-56`, light white theme (see `L` color object in Sidebar.tsx)
 - **Settings section** in sidebar: `padding: '17px 8px'` to match ChatInput bar height (75px)
 - **Queue badge**: red circle on คิวงาน sidebar item, shows `needsYouCount` from `queue.filter(s => s.statusKey === 'needs_you').length`
+- **QuickActionBar**: always-visible chip bar between ChatArea and ChatInput; only renders on chat view (not queue view)
 
 ---
 
@@ -92,7 +93,8 @@ src/
 │   │   ├── OcrProgress.tsx      ← Stage rows + blue→teal gradient bar
 │   │   ├── QuickChips.tsx       ← Blue pill chips, hover fills solid blue
 │   │   ├── Modals.tsx           ← PreviewModal + ConfirmModal (teal confirm)
-│   │   └── SPNListPanel.tsx     ← SPN list table: checkbox multi-select, pagination (5/page), "ขอใบอนุญาต" per row
+│   │   ├── SPNListPanel.tsx     ← SPN list table: checkbox multi-select, pagination (5/page), "ขอใบอนุญาต" per row
+│   │   └── QuickActionBar.tsx   ← 4-chip bar above ChatInput: สร้าง RGoods / ดูสถานะใบขน / จัดการคิวงาน / อัปโหลดเอกสาร
 │   ├── queue/
 │   │   └── QueuePage.tsx        ← Full queue UI: ListView (left) + DetailView (right), OCR + draft + email tabs
 │   └── ui/
@@ -257,8 +259,8 @@ Bot messages contain inline HTML with `onclick`. Page exposes:
   startOCRDemo:       () => startOCR(),
   onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
   triggerConnect:     () => { ... },            // show ConnectPanel
-  showSPNList:        () => showSPNListInChat(), // show SPNListPanel in chat
-  goToQueue:          (id: string) => { setQueueOpenId(id); setActiveItem('queue') },
+  showSPNList:        () => showSPNListInChat(),      // show SPNListPanel in chat
+  goToQueue:          (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
   // Not-found flow choices
   chooseXML:          () => withTyping(() => showXMLUpload(), 300),
   chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
@@ -362,6 +364,27 @@ npm run lint   # ESLint
 12. **Shared OCR logic** — always use `useOCRFlow` hook; never duplicate OCR state in components
 13. **Queue state** — `queue: Shipment[]` lives in page.tsx; mutate only via `updateShipment()` and `addToQueue()`
 14. **TypeScript Set spread** — use `Array.from(new Set([...]))` not `[...new Set([...])]` (ES target compatibility)
+
+---
+
+## Shipment ID vs customsNo
+- `id` (e.g. `IMP-68-008912`) — internal system ID, used for React keys, `updateShipment()`, and `goToQueue()` navigation only
+- `customsNo` (e.g. `A012-25680617-00891`) — official customs document number from กรมศุลกากร, always shown to the user in both QueuePage ListView/DetailView and chat status messages
+
+**Rule**: display `customsNo` everywhere in UI; use `id` only for internal references.
+
+---
+
+## QuickActionBar (src/components/chat/QuickActionBar.tsx)
+4 pill chips rendered between ChatArea and ChatInput, always visible on chat page:
+| Chip | Color | Action |
+|---|---|---|
+| สร้าง RGoods | Blue `#0463EF` | `handleSend('สร้าง RGoods')` → login → SPN list |
+| ดูสถานะใบขน | Teal `#0D8F61` | `showQueueStatusInChat()` → renders all queue items as clickable cards in chat |
+| จัดการคิวงาน | Purple `#7C3AED` | `setSidebarActive('queue')` → navigate to queue page |
+| อัปโหลดเอกสาร | Orange `#B45309` | `handleSend('upload เอกสาร Invoice')` → show upload module |
+
+`showQueueStatusInChat()` reads live `queue` state and renders each `Shipment` with `customsNo`, goods name, agency badge, and status badge; each row has `onclick="window.__chat?.goToQueue(id)"`.
 
 ---
 

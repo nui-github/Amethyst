@@ -28,7 +28,7 @@ interface ChatAreaProps {
 }
 
 const WELCOME_CHIPS = [
-  { label: 'สร้าง RGoods',    value: 'สร้าง RGoods ด้วยใบขน Ref : HTHM000000003' },
+  { label: 'สร้าง RGoods',    value: 'สร้าง RGoods' },
   { label: 'ดูสถานะใบขน',    value: 'ดูสถานะใบขน HTHM000000003' },
   { label: 'ใบอนุญาตนำเข้า', value: 'สร้างใบอนุญาตนำเข้า' },
   { label: 'อัปโหลดเอกสาร',  value: 'upload เอกสาร Invoice' },
