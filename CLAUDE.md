@@ -145,7 +145,7 @@ For inline flex alignment, wrap the element: `style="display:inline-flex;align-i
 handleSend(text)
   ├─ "สร้าง rgoods" (no ref) → !isConnected → ConnectPanel → showSPNListInChat()
   │     └─ SPNListPanel: select refs → onRequestPermit(refs) → addToQueueFromChat(refs)
-  │           └─ addToQueueFromChat: creates Shipment(needs_you), shows success + "ไปหน้าคิวงาน" btn
+  │           └─ addToQueueFromChat: creates Shipment(needs_you, isNew:true), shows success + "ไปหน้าคิวงาน" btn
   ├─ HTHM ref + "สร้าง/rgoods"
   │     ├─ !isConnected → setPendingRef(ref) → show_connect → ConnectPanel
   │     │     └─ onConnect() → showConnectOptions(ref) → 2 choice cards
@@ -204,7 +204,7 @@ handleConfirmSubmit() → ConfirmModal → handleSubmit() → success → step:'
 queue: Shipment[]                        // all shipments
 queueOpenId: string | null               // pre-select a shipment when navigating to queue
 spnEntries: SPNEntry[]                   // SPN list shown in chat, tracks inQueue flag
-needsYouCount = queue.filter(s => s.statusKey === 'needs_you').length
+needsYouCount = queue.filter(s => s.isNew === true).length  // unseen items only
 updateShipment(id, patch)                // partial update helper
 addToQueue(newItems)                     // append new Shipment objects
 ```
@@ -219,6 +219,8 @@ ListView (left panel, width 300px when detail open, full-width otherwise)
   ← live search input (filters customsNo / customer / goods / hthmRef on keypress)
   ← each row: selected row highlighted blue-left-border + #EFF6FF bg
   ← each row shows status badge, shipment ref, goods, agency
+  ← isNew rows show blue "ใหม่" badge after customsNo
+  ← on row click: updateShipment(id, { isNew: false }) → sidebar badge decrements
 
 DetailView (right panel, opens on row click)
   Tabs: อัปโหลด/OCR | การประเมิน | ร่างคำขอ | ร่างอีเมล | ประวัติ
@@ -253,6 +255,13 @@ no_permit = ไม่ต้องขอใบอนุญาต (HPLC etc.)
 | `email_outbox` | ร่างอีเมลรอส่ง | blue |
 | `await_customer` | รอลูกค้ายืนยัน | purple |
 | `submitted` | ยื่นแล้ว | teal |
+
+### isNew — Unseen badge & sidebar count
+- `Shipment.isNew: boolean` — `true` = ยังไม่เคยเปิดดู → แสดง blue "ใหม่" badge ใน ListView
+- `needsYouCount` (sidebar badge) = `queue.filter(s => s.isNew === true).length`
+- เมื่อกดเปิดรายการ: `updateShipment(id, { isNew: false })` → badge ลดทันที
+- รายการจาก mock: `needs_you` items เริ่มด้วย `isNew: true`
+- รายการใหม่จาก chat (`addToQueueFromChat`): สร้างด้วย `isNew: true` เสมอ
 
 ### AgencyKey values (AGENCY_LABEL / AGENCY_SHORT in mock/queue.ts)
 `dld`=กรมปศุสัตว์ | `fda`=อย. | `dft`=กรมการค้าต่างประเทศ | `doa`=กษ. | `diw`=วอ. | `none`=ไม่ระบุ
