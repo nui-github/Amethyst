@@ -53,8 +53,13 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
   <div flex flex-1>
     <Sidebar />                  ← fixed w-56, white, light theme
     <div flex-1 flex-col>
-      <ChatArea />               ← scrollable, #F2F2F2 bg
-      <ChatInput />              ← h-75px, white, borderTop #E8E8E8
+      {activeItem === 'queue'
+        ? <QueuePage />          ← full-height queue view, replaces chat area
+        : <>
+            <ChatArea />         ← scrollable, #F2F2F2 bg
+            <ChatInput />        ← h-75px, white, borderTop #E8E8E8
+          </>
+      }
     </div>
   </div>
 </div>
@@ -63,6 +68,7 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 - **ChatHeader**: full-width across entire screen, contains logo + brand + title + status pill + action icons
 - **Sidebar**: no collapse, fixed width `w-56`, light white theme (see `L` color object in Sidebar.tsx)
 - **Settings section** in sidebar: `padding: '17px 8px'` to match ChatInput bar height (75px)
+- **Queue badge**: red circle on คิวงาน sidebar item, shows `needsYouCount` from `queue.filter(s => s.statusKey === 'needs_you').length`
 
 ---
 
@@ -75,7 +81,7 @@ src/
 │   └── page.tsx            ← ALL state + ALL chat logic + inline HTML helpers
 ├── components/
 │   ├── chat/
-│   │   ├── Sidebar.tsx          ← Light white sidebar (L color object), fixed w-56
+│   │   ├── Sidebar.tsx          ← Light white sidebar (L color object), fixed w-56, needsYouCount badge
 │   │   ├── ChatHeader.tsx       ← Full-width white header, logo left, teal status pill
 │   │   ├── ChatArea.tsx         ← Routes special content keys to React components
 │   │   ├── ChatInput.tsx        ← Textarea + blue send button, white bg
@@ -85,13 +91,21 @@ src/
 │   │   ├── FullUploadPanel.tsx  ← 4-slot drag-drop (invoice/customs/coa/ulicense)
 │   │   ├── OcrProgress.tsx      ← Stage rows + blue→teal gradient bar
 │   │   ├── QuickChips.tsx       ← Blue pill chips, hover fills solid blue
-│   │   └── Modals.tsx           ← PreviewModal + ConfirmModal (teal confirm)
+│   │   ├── Modals.tsx           ← PreviewModal + ConfirmModal (teal confirm)
+│   │   └── SPNListPanel.tsx     ← SPN list table: checkbox multi-select, pagination (5/page), "ขอใบอนุญาต" per row
+│   ├── queue/
+│   │   └── QueuePage.tsx        ← Full queue UI: ListView (left) + DetailView (right), OCR + draft + email tabs
 │   └── ui/
 │       ├── Badge.tsx            ← Reusable badge variants
 │       └── Button.tsx           ← Reusable button variants
+├── hooks/
+│   └── useOCRFlow.ts       ← Shared OCR hook (used by both chat page.tsx and QueuePage)
 └── lib/
-    ├── types.ts            ← ChatMessage, FormData, ChatStep, UploadSlots, SlotKey
-    └── utils.ts            ← generateId, getTime, KNOWN_REFS, MOCK_FORM_DATA, MOCK_OCR_FULL
+    ├── types.ts            ← ChatMessage, FormData, ChatStep, UploadSlots, SlotKey, SPNEntry, Shipment, AgencyKey, ShipmentStatus
+    ├── utils.ts            ← generateId, getTime, KNOWN_REFS, MOCK_FORM_DATA, MOCK_OCR_FULL
+    └── mock/
+        ├── queue.ts        ← MOCK_QUEUE (6 Shipment objects), AGENCY_LABEL, AGENCY_SHORT, STATUS_META
+        └── spn_list.ts     ← MOCK_SPN_LIST (12 SPNEntry objects, HTHM000000001–HTHM000000012)
 ```
 
 ---
@@ -127,6 +141,9 @@ For inline flex alignment, wrap the element: `style="display:inline-flex;align-i
 
 ```
 handleSend(text)
+  ├─ "สร้าง rgoods" (no ref) → !isConnected → ConnectPanel → showSPNListInChat()
+  │     └─ SPNListPanel: select refs → onRequestPermit(refs) → addToQueueFromChat(refs)
+  │           └─ addToQueueFromChat: creates Shipment(needs_you), shows success + "ไปหน้าคิวงาน" btn
   ├─ HTHM ref + "สร้าง/rgoods"
   │     ├─ !isConnected → setPendingRef(ref) → show_connect → ConnectPanel
   │     │     └─ onConnect() → showConnectOptions(ref) → 2 choice cards
@@ -173,7 +190,60 @@ handleConfirmSubmit() → ConfirmModal → handleSubmit() → success → step:'
 | `'show_form'` | FormPanel component |
 | `'show_full_upload'` | FullUploadPanel component |
 | `'show_connect'` | ConnectPanel component (ShippingNet login) |
+| `'show_spn_list'` | SPNListPanel component (SPN list with checkboxes + pagination) |
 | anything else (isHtml=true) | `dangerouslySetInnerHTML` |
+
+---
+
+## Queue Page Architecture
+
+### State (all in page.tsx, passed as props)
+```ts
+queue: Shipment[]                        // all shipments
+queueOpenId: string | null               // pre-select a shipment when navigating to queue
+spnEntries: SPNEntry[]                   // SPN list shown in chat, tracks inQueue flag
+needsYouCount = queue.filter(s => s.statusKey === 'needs_you').length
+updateShipment(id, patch)                // partial update helper
+addToQueue(newItems)                     // append new Shipment objects
+```
+
+### QueuePage flow (src/components/queue/QueuePage.tsx)
+```
+ListView (left panel)
+  ← search filter + status tabs (ทั้งหมด / รอคุณยืนยัน / ร่างอีเมลรอส่ง / ...)
+  ← each row shows status badge, shipment ref, goods, agency
+
+DetailView (right panel, opens on row click)
+  Tabs: อัปโหลด/OCR | การประเมิน | ร่างคำขอ | ร่างอีเมล | ประวัติ
+
+  "อัปโหลด/OCR" tab (visible only when statusKey === 'needs_you')
+    → dropzone → click "เริ่ม OCR และวิเคราะห์เอกสาร"
+    → useOCRFlow.startOCR() → 4-stage animation
+    → on complete: updateShipment(id, { draft, conf:88, stage:4, ... })
+    → auto-switch to "ร่างคำขอ" tab
+
+  Action bar:
+    "ยืนยันและดำเนินการต่อ" → updateShipment(id, { statusKey:'email_outbox', stage:6 })
+    "ส่งอีเมลหาลูกค้า"       → updateShipment(id, { statusKey:'await_customer', stage:7 })
+```
+
+### Shipment status flow
+```
+needs_you → (OCR + confirm) → email_outbox → (send email) → await_customer → submitted
+no_permit = ไม่ต้องขอใบอนุญาต (HPLC etc.)
+```
+
+### ShipmentStatus values & labels (STATUS_META in mock/queue.ts)
+| statusKey | label | color |
+|---|---|---|
+| `needs_you` | รอคุณยืนยัน | orange |
+| `no_permit` | ไม่ต้องขอใบอนุญาต | gray |
+| `email_outbox` | ร่างอีเมลรอส่ง | blue |
+| `await_customer` | รอลูกค้ายืนยัน | purple |
+| `submitted` | ยื่นแล้ว | teal |
+
+### AgencyKey values (AGENCY_LABEL / AGENCY_SHORT in mock/queue.ts)
+`dld`=กรมปศุสัตว์ | `fda`=อย. | `dft`=กรมการค้าต่างประเทศ | `doa`=กษ. | `diw`=วอ. | `none`=ไม่ระบุ
 
 ---
 
@@ -186,6 +256,9 @@ Bot messages contain inline HTML with `onclick`. Page exposes:
   triggerFullUpload:  () => { setStep('full_upload'); addMessage({...}) },
   startOCRDemo:       () => startOCR(),
   onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
+  triggerConnect:     () => { ... },            // show ConnectPanel
+  showSPNList:        () => showSPNListInChat(), // show SPNListPanel in chat
+  goToQueue:          (id: string) => { setQueueOpenId(id); setActiveItem('queue') },
   // Not-found flow choices
   chooseXML:          () => withTyping(() => showXMLUpload(), 300),
   chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
@@ -200,6 +273,21 @@ Bot messages contain inline HTML with `onclick`. Page exposes:
 
 ---
 
+## Shared Hook: useOCRFlow (src/hooks/useOCRFlow.ts)
+
+Both `page.tsx` (chat) and `QueuePage` use the same OCR hook:
+```ts
+export type OCRResult = Awaited<ReturnType<typeof runOCR>>
+export function useOCRFlow() {
+  return { ocrProgress, ocrStages, isOCRing, startOCR, resetOCR }
+}
+```
+- `startOCR(files)` runs 4 stages × 700ms each, returns `OCRResult` (mock data)
+- `QueuePage` calls `useOCRFlow()` inside `DetailView` per-shipment
+- `page.tsx` calls `useOCRFlow()` at root level for chat OCR
+
+---
+
 ## API Layer (สำหรับ dev ส่งมอบ)
 
 ```
@@ -208,8 +296,10 @@ src/lib/
 │   ├── spn.ts   ← fetchSPN(ref) — แทนที่ด้วย real HTTP call
 │   └── ocr.ts   ← runOCR(files) — แทนที่ด้วย Textract/Vision
 └── mock/
-    ├── spn.ts   ← KNOWN_REFS, MOCK_FORM_DATA
-    └── ocr.ts   ← MOCK_OCR_FULL
+    ├── spn.ts      ← KNOWN_REFS, MOCK_FORM_DATA
+    ├── ocr.ts      ← MOCK_OCR_FULL
+    ├── queue.ts    ← MOCK_QUEUE (6 Shipment), STATUS_META, AGENCY_LABEL, AGENCY_SHORT
+    └── spn_list.ts ← MOCK_SPN_LIST (12 SPNEntry)
 ```
 
 **dev ต้องแก้เพียง 2 ไฟล์:** `src/lib/api/spn.ts` และ `src/lib/api/ocr.ts`
@@ -219,6 +309,16 @@ src/lib/
 ```
 KNOWN_REFS: HTHM000000001 → HTHM000000005  (trigger happy path)
 Any other ref (e.g. HTHM000000099) → triggers not-found flow
+
+MOCK_SPN_LIST: HTHM000000001 → HTHM000000012 (12 entries, pharma/medical context)
+
+MOCK_QUEUE (6 shipments):
+  IMP-68-008912: Amoxicillin,        อย.,  needs_you,      2 flags
+  IMP-68-008915: Insulin,            อย.,  needs_you,      1 flag
+  IMP-68-008920: Surgical Gloves,    อย.,  email_outbox,   1 resolved flag
+  IMP-68-008923: Glyphosate,         กษ.,  await_customer, no flags
+  IMP-68-008928: HPLC Column,        none, no_permit,      no flags
+  IMP-68-008931: Ethanol,            วอ.,  submitted,      no flags
 
 MOCK_OCR_FULL fields:
   invoiceNo:     'INV-2024-8834'
@@ -259,6 +359,9 @@ npm run lint   # ESLint
 9. **TypeScript strict** — no `any` except for `window.__chat` bridge
 10. **Animations** — defined in globals.css (slideUp, bounce-dot, pulse-dot) and tailwind.config.js
 11. **OCR progress bar** — uses `.ocr-fill` class from globals.css (blue→teal gradient)
+12. **Shared OCR logic** — always use `useOCRFlow` hook; never duplicate OCR state in components
+13. **Queue state** — `queue: Shipment[]` lives in page.tsx; mutate only via `updateShipment()` and `addToQueue()`
+14. **TypeScript Set spread** — use `Array.from(new Set([...]))` not `[...new Set([...])]` (ES target compatibility)
 
 ---
 
@@ -266,9 +369,11 @@ npm run lint   # ESLint
 - [ ] Replace `KNOWN_REFS` + `MOCK_FORM_DATA` with real SPN API calls
 - [ ] Replace mock ShippingNet auth in ConnectPanel with real API login
 - [ ] Replace OCR animation with real OCR service (AWS Textract / Google Vision)
-- [ ] Add file upload to storage (S3 / GCS) in FullUploadPanel
+- [ ] Replace `MOCK_SPN_LIST` with real SPN list API (paginated, sorted by date desc)
+- [ ] Add file upload to storage (S3 / GCS) in FullUploadPanel + QueuePage dropzone
 - [ ] Mobile responsive: collapse sidebar to icon rail at <768px
 - [ ] Dark mode using BizX navy as background
 - [ ] Persistent chat history (localStorage or backend sessions)
 - [ ] PDF inline preview in chat bubbles
 - [ ] Real-time license status notifications
+- [ ] Multi-select bulk action in SPNListPanel → batch queue creation
