@@ -104,6 +104,7 @@ export default function Home() {
   const [currentRef, setCurrentRef]       = useState('')
   const [isConnected, setIsConnected]     = useState(false)
   const [pendingRef, setPendingRef]        = useState('')
+  const [confirmedFlagIds, setConfirmedFlagIds] = useState<string[]>([])
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])
@@ -555,20 +556,16 @@ export default function Home() {
       showImportLicenseMenu:  () => showImportLicenseMenu(),
       showPreviewInChat:      () => showPreviewInChat(),
       confirmFlag:            (id: string, total: number) => {
-        const el = document.getElementById(id)
-        if (!el) return
-        el.style.background = 'rgba(22,234,158,0.06)'
-        el.style.border = '1.5px solid rgba(22,234,158,0.4)'
-        const btnDiv = document.getElementById(id + '_btn')
-        if (btnDiv) btnDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0D8F61;padding:5px 12px;border-radius:10px;background:rgba(22,234,158,0.15)">✓ ยืนยันแล้ว</span>`
-        const w = window as any
-        if (!w.__confirmedFlags) w.__confirmedFlags = new Set()
-        w.__confirmedFlags.add(id)
-        if (w.__confirmedFlags.size >= total) {
-          w.__confirmedFlags = new Set()
-          userMsg('ยืนยันทุกจุดแล้ว')
-          setTimeout(() => showEmailDraftInChat(), 800)
-        }
+        setConfirmedFlagIds(prev => {
+          const next = prev.includes(id) ? prev : [...prev, id]
+          if (next.length >= total) {
+            setTimeout(() => {
+              userMsg('ยืนยันทุกจุดแล้ว')
+              setTimeout(() => showEmailDraftInChat(), 800)
+            }, 100)
+          }
+          return next
+        })
       },
       selectQty:              (val: string) => {
         const qtyBtns = document.querySelectorAll('#flag_qty button[onclick*="selectQty"]')
@@ -1129,6 +1126,7 @@ export default function Home() {
             formValues={formValues} currentStep={step}
             pendingRef={pendingRef}
             spnEntries={spnEntries}
+            confirmedFlagIds={confirmedFlagIds}
             onFormChange={handleFormChange} onPreview={handlePreview}
             onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
             onConnected={showConnectOptions}
