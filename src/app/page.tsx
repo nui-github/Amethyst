@@ -320,28 +320,50 @@ export default function Home() {
           </div>
         </div>`)
 
-        // Step 3: Flags + action buttons
+        // Step 3: Flags — individual confirm per flag
         withTyping(() => {
-          botMsg(`<div style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          const flagCard = (id: string, num: number, total: number, title: string, body: string, extra = '') =>
+            `<div id="${id}" style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1.5px solid #FDE68A;margin-bottom:8px;transition:all .3s">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <div style="flex:1">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                    ${icWarn('#B45309',13)}
+                    <span style="font-size:12px;font-weight:700;color:#B45309">จุดที่ ${num}: ${title}</span>
+                  </div>
+                  <div style="font-size:11px;color:#92400E;line-height:1.6">${body}</div>
+                  ${extra}
+                </div>
+                <div id="${id}_btn" style="flex-shrink:0">
+                  <button onclick="window.__chat?.confirmFlag('${id}',${total})"
+                    style="${btnPrimary};padding:5px 12px;font-size:11px;background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy}">
+                    ${icCheck(C.navy,11)} ยืนยัน
+                  </button>
+                </div>
+              </div>
+            </div>`
+
+          botMsg(`<div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
               ${icWarn('#B45309',15)}
-              <span style="font-size:12px;font-weight:700;color:#B45309">พบ 2 จุดที่ต้องตรวจสอบ</span>
+              <span style="font-size:13px;font-weight:700;color:#B45309">พบ 2 จุดที่ต้องยืนยันทีละจุด</span>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <div style="font-size:11px;color:#92400E;padding:6px 10px;background:#FEF3C7;border-radius:8px;line-height:1.5">
-                <strong>1. ปริมาณนำเข้ามี 2 ค่า</strong><br>Invoice: 250 กก. vs Packing List: 248.5 กก. — โปรดเลือกค่าที่ถูกต้องก่อนยื่น
-              </div>
-              <div style="font-size:11px;color:#92400E;padding:6px 10px;background:#FEF3C7;border-radius:8px;line-height:1.5">
-                <strong>2. เลขใบรับรอง GMP อ่านไม่ชัด 3 ตัวท้าย</strong><br>AI ความมั่นใจ 62% — โปรดเทียบกับเอกสารต้นฉบับ
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px">
+            ${flagCard('flag_qty', 1, 2, 'ปริมาณนำเข้ามี 2 ค่า',
+              'Invoice: <strong>250 กก.</strong> vs Packing List: <strong>248.5 กก.</strong><br>โปรดเลือกค่าที่จะใช้ยื่น:',
+              `<div style="display:flex;gap:6px;margin-top:8px">
+                <button onclick="window.__chat?.selectQty('250')" style="${btnSecondary};font-size:11px;padding:4px 10px">ใช้ 250 กก. (Invoice)</button>
+                <button onclick="window.__chat?.selectQty('248.5')" style="${btnSecondary};font-size:11px;padding:4px 10px">ใช้ 248.5 กก. (Packing)</button>
+              </div>`
+            )}
+            ${flagCard('flag_gmp', 2, 2, 'เลขใบรับรอง GMP อ่านไม่ชัด',
+              'AI ความมั่นใจ 62% — ผลอ่าน: <strong>IND-GMP-2024-••3821</strong><br>พิมพ์เลขที่ถูกต้อง หรือกดยืนยันถ้าถูกแล้ว:',
+              `<input id="gmp_input" type="text" placeholder="เช่น IND-GMP-2024-003821"
+                style="margin-top:8px;width:100%;border:1px solid #FDE68A;border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;background:#FFFEF0;color:#92400E;outline:none;box-sizing:border-box"
+                onfocus="this.style.borderColor='${C.tealMid}'" onblur="this.style.borderColor='#FDE68A'"/>`
+            )}
+          </div>`)
+          botMsg(`<div style="display:flex;gap:8px;margin-top:2px">
             <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
               ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
-            </button>
-            <button onclick="window.__chat?.confirmDraft()" style="${btnPrimary};flex:1;justify-content:center">
-              ${icCheck('#fff',13)} ยืนยันและดำเนินการต่อ
             </button>
           </div>`)
         }, 900)
@@ -500,6 +522,10 @@ export default function Home() {
         withTyping(() => showOCRResultsInChat({
           hsCode: hs,
           importer: 'บริษัท เฮลท์ฟาร์มา จำกัด',
+          declarant: 'บริษัท ไทยเทรด จำกัด',
+          declarationDate: '10/06/2568',
+          goodsDesc: 'วัตถุดิบยา Amoxicillin Trihydrate',
+          unit: 'กิโลกรัม',
           quantity: '250',
           invoiceNo: 'INV-2024-8834',
           invoiceDate: '05/06/2568',
@@ -526,6 +552,28 @@ export default function Home() {
       goToQueue:              (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
       showImportLicenseMenu:  () => showImportLicenseMenu(),
       showPreviewInChat:      () => showPreviewInChat(),
+      confirmFlag:            (id: string, total: number) => {
+        const el = document.getElementById(id)
+        if (!el) return
+        el.style.background = 'rgba(22,234,158,0.06)'
+        el.style.border = '1.5px solid rgba(22,234,158,0.4)'
+        const btnDiv = document.getElementById(id + '_btn')
+        if (btnDiv) btnDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0D8F61;padding:5px 12px;border-radius:10px;background:rgba(22,234,158,0.15)">✓ ยืนยันแล้ว</span>`
+        const w = window as any
+        if (!w.__confirmedFlags) w.__confirmedFlags = new Set()
+        w.__confirmedFlags.add(id)
+        if (w.__confirmedFlags.size >= total) {
+          w.__confirmedFlags = new Set()
+          userMsg('ยืนยันทุกจุดแล้ว')
+          setTimeout(() => showEmailDraftInChat(), 800)
+        }
+      },
+      selectQty:              (val: string) => {
+        const qtyBtns = document.querySelectorAll('#flag_qty button[onclick*="selectQty"]')
+        qtyBtns.forEach((b: any) => { b.style.background = '#F0F0F0'; b.style.color = '#666' })
+        const clicked = Array.from(qtyBtns).find((b: any) => b.textContent.includes(val))
+        if (clicked) { (clicked as any).style.background = 'rgba(22,234,158,0.15)'; (clicked as any).style.color = '#0D8F61' }
+      },
       confirmDraft:           () => { userMsg('ยืนยันและดำเนินการต่อ'); showEmailDraftInChat() },
       editAndReupload:        () => {
         userMsg('แก้ไข / อัปโหลดใหม่')
