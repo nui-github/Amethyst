@@ -239,7 +239,7 @@ export function Sidebar({ activeItem, onSelect, needsYouCount = 0, collapsed = f
           <Bot size={14} color="#fff" strokeWidth={1.75} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold leading-tight truncate" style={{ color: L.textDark }}>ShippingNet</p>
+          <p className="text-[13px] font-semibold leading-tight truncate" style={{ color: L.textDark }}>Netbay Agent</p>
           <p className="text-[11px] leading-tight truncate" style={{ color: L.label }}>Assistant</p>
         </div>
         <ChevronDown size={13} className="flex-shrink-0" style={{ color: L.label }} />
