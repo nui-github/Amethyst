@@ -124,24 +124,143 @@ export default function Home() {
   const showImportLicenseMenu = useCallback(() => {
     userMsg('ขอใบอนุญาตนำเข้า')
     withTyping(() => {
-      const subCard = (onclick: string, iconHtml: string, title: string, desc: string) =>
+      const docCard = (onclick: string, iconHtml: string, title: string, desc: string, accent = C.blue) =>
         `<div onclick="${onclick}"
-          style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s;margin-bottom:8px"
-          onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.03)'"
+          style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s"
+          onmouseover="this.style.borderColor='${accent}';this.style.background='${accent}0D'"
           onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
-          <div style="width:36px;height:36px;border-radius:9px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
-          <div style="flex:1">
+          <div style="width:38px;height:38px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
+          <div style="flex:1;min-width:0">
             <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
-            <p style="font-size:11px;color:${C.n500};margin:2px 0 0">${desc}</p>
+            <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
           </div>
-          <span style="color:${C.n300};font-size:16px">›</span>
+          <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
         </div>`
-      botMsg(`<p style="font-size:12px;font-weight:600;color:${C.navy};margin:0 0 10px">เลือกประเภทการขอใบอนุญาต:</p>
-        ${subCard('window.__chat?.chooseDocs()', icUpload(C.blue,16), 'อัปโหลดใบขนและเอกสาร', 'Invoice, COA, ใบเลข U — OCR อัตโนมัติ')}
-        ${subCard('window.__chat?.chooseXML()', icFile('#1565C0',16), 'อัปโหลดใบขน (ไฟล์ XML)', 'นำเข้าข้อมูลจาก XML ไม่ต้องกรอกเพิ่ม')}
-        ${subCard('window.__chat?.chooseRGoods()', icShip(C.tealDark,16), 'สร้างด้วยระบบ RGoods (ShippingNet)', 'ดึงข้อมูลจาก ShippingNet โดยตรง')}`)
+      botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 12px">มีเอกสารอะไรบ้างครับ? เลือกประเภทที่มี:</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${docCard('window.__chat?.chooseCustomsDocs()', icFile(C.blue, 17), 'ใบขนสินค้า', 'อัปโหลดใบขนฯ + เอกสารประกอบ — AI OCR ดึงข้อมูลทั้งหมด', C.blue)}
+          ${docCard('window.__chat?.chooseInvoiceFirst()', icList(C.tealDark, 17), 'ใบ Invoice', 'เริ่มจาก Invoice — AI วิเคราะห์แล้วแจ้งว่าขาดข้อมูลอะไรเพิ่ม', C.tealDark)}
+          <div style="padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div style="width:38px;height:38px;border-radius:10px;background:${C.n100};display:flex;align-items:center;justify-content:center;flex-shrink:0">${icFolder(C.n500, 17)}</div>
+              <div>
+                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">เอกสารอื่นๆ</p>
+                <p style="font-size:11px;color:${C.n500};margin:2px 0 0">ระบุชื่อเอกสารที่มี</p>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <input id="otherDocInput" type="text" placeholder="เช่น COA, GMP Certificate, Packing List…"
+                style="flex:1;border:1px solid ${C.n200};border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;color:${C.navy};background:#fff"
+                onfocus="this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.12)'"
+                onblur="this.style.borderColor='${C.n200}';this.style.boxShadow='none'"
+                onkeydown="if(event.key==='Enter')window.__chat?.sendOtherDoc()"/>
+              <button onclick="window.__chat?.sendOtherDoc()" style="${btnPrimary};padding:7px 14px">→</button>
+            </div>
+          </div>
+        </div>`)
     }, 400)
   }, [userMsg, botMsg, withTyping])
+
+  // ── INVOICE-FIRST UPLOAD ────────────────────────────────────────
+  const showInvoiceFirstUpload = useCallback(() => {
+    setStep('invoice_upload')
+    botMsg(`<p style="font-size:13px;font-weight:600;color:${C.tealDark};margin:0 0 8px;display:flex;align-items:center;gap:6px">${icList(C.tealDark, 15)} อัปโหลด Invoice</p>
+      <p style="font-size:12px;color:${C.n600};margin:0 0 12px;line-height:1.6">AI จะ OCR Invoice → แสดงข้อมูลที่ได้ → แจ้งข้อมูลที่ยังขาด → ช่วยกรอกจนครบก่อนร่างใบอนุญาต</p>
+      <div onclick="window.__chat?.processInvoiceFirst()"
+        style="border:2px dashed rgba(13,143,97,0.35);border-radius:14px;padding:24px;text-align:center;background:rgba(22,234,158,0.04);cursor:pointer;transition:all .2s"
+        onmouseover="this.style.borderColor='${C.tealMid}';this.style.background='rgba(22,234,158,0.08)'"
+        onmouseout="this.style.borderColor='rgba(13,143,97,0.35)';this.style.background='rgba(22,234,158,0.04)'">
+        <div style="display:flex;justify-content:center;margin-bottom:10px">${icUpload(C.tealDark, 36)}</div>
+        <p style="font-size:13px;font-weight:700;color:${C.tealDark};margin:0">คลิกหรือลากไฟล์ Invoice มาวาง</p>
+        <p style="font-size:11px;color:${C.n500};margin:4px 0 0">PDF, JPG, PNG, Excel — สูงสุด 20MB</p>
+      </div>
+      <button onclick="window.__chat?.processInvoiceFirst()" style="${btnPrimary};background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy};margin-top:10px;width:100%;justify-content:center;display:flex">
+        ${icSearch(C.navy, 13)} OCR และวิเคราะห์ Invoice
+      </button>`)
+  }, [botMsg])
+
+  // ── INVOICE OCR (first pass — partial data + missing fields) ────
+  const processInvoiceFirstOCR = useCallback(() => {
+    userMsg('ส่ง Invoice เพื่อ OCR')
+    setStep('ocr')
+    addMessage({ role: 'bot', content: 'ocr_progress', isHtml: true })
+    setIsTyping(true)
+    runOCRFlow([]).then(() => {
+      setIsTyping(false)
+      withTyping(() => {
+        botMsg(`<div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            ${icCheck(C.tealDark, 16)}
+            <span style="font-size:13px;font-weight:700;color:${C.tealDark}">OCR Invoice สำเร็จ — ดึงข้อมูลได้ 6 รายการ</span>
+          </div>
+          <div style="${cardWrap}">
+            <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.tealDark, 13)} ข้อมูลที่ดึงได้จาก Invoice</div>
+            <div style="${cardBody}">
+              <div style="${rowStyle}"><span style="color:${C.n600}">ผู้นำเข้า</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:700;color:${C.blue}">บริษัท เฮลท์ฟาร์มา จำกัด</span><span style="${badgeOCR}">OCR</span></span></div>
+              <div style="${rowStyle}"><span style="color:${C.n600}">สินค้า</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:600;color:${C.navy}">Amoxicillin Trihydrate</span><span style="${badgeOCR}">OCR</span></span></div>
+              <div style="${rowStyle}"><span style="color:${C.n600}">ปริมาณ</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:600;color:${C.navy}">250 กิโลกรัม</span><span style="${badgeOCR}">OCR</span></span></div>
+              <div style="${rowStyle}"><span style="color:${C.n600}">Invoice No.</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:600;color:${C.navy}">INV-2024-8834</span><span style="${badgeOCR}">OCR</span></span></div>
+              <div style="${rowStyle}"><span style="color:${C.n600}">วันที่ Invoice</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:600;color:${C.navy}">05/06/2568</span><span style="${badgeOCR}">OCR</span></span></div>
+              <div style="${rowStyle};border:none"><span style="color:${C.n600}">Lot No.</span><span style="display:flex;align-items:center;gap:5px"><span style="font-weight:600;color:${C.navy}">LOT-2024-567</span><span style="${badgeOCR}">OCR</span></span></div>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A;margin-top:10px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              ${icWarn('#B45309', 14)}
+              <span style="font-size:12px;font-weight:700;color:#B45309">ยังขาดข้อมูล 5 รายการที่จำเป็นสำหรับใบอนุญาต</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <span style="${badgeAmber}">HS Code</span>
+              <span style="${badgeAmber}">เลขใบขนสินค้า</span>
+              <span style="${badgeAmber}">เลขรับรอง COA</span>
+              <span style="${badgeAmber}">เลขทะเบียนยา</span>
+              <span style="${badgeAmber}">วันที่นำเข้า</span>
+            </div>
+          </div>
+          <p style="font-size:12px;color:${C.n600};margin:10px 0 8px">อัปโหลดเอกสารเพิ่มเพื่อให้ AI ดึงข้อมูล หรือพิมพ์เองก็ได้ครับ:</p>
+          <div style="display:flex;gap:8px">
+            <button onclick="window.__chat?.uploadMoreDocs()" style="${btnSecondary};flex:1;justify-content:center;display:flex">
+              ${icUpload(C.n600, 13)} อัปโหลดเอกสารเพิ่ม
+            </button>
+            <button onclick="window.__chat?.fillMissingManually()" style="${btnPrimary};flex:1;justify-content:center;display:flex">
+              ${icPlus('#fff', 13)} พิมพ์ข้อมูลเอง
+            </button>
+          </div>
+        </div>`)
+      }, 600)
+    })
+  }, [userMsg, addMessage, runOCRFlow, withTyping, botMsg])
+
+  // ── FILL MISSING FIELDS MANUALLY ───────────────────────────────
+  const showMissingFieldsForm = useCallback(() => {
+    withTyping(() => {
+      const fields = [
+        ['HS Code', 'mf_hs', 'เช่น 2941.10.00'],
+        ['เลขใบขนสินค้า', 'mf_customs', 'เช่น A012-25680617-00891'],
+        ['เลขรับรอง COA', 'mf_coa', 'เช่น IND-COA-2024-001'],
+        ['เลขทะเบียนยา (อย.)', 'mf_drugreg', 'เช่น 1A 234/50'],
+        ['วันที่นำเข้า', 'mf_importdate', 'เช่น 10/06/2568 (วว/ดด/ปปปป)'],
+      ]
+      const inputRow = ([label, id, ph]: string[]) =>
+        `<div>
+          <label style="font-size:11px;font-weight:600;color:${C.n600};display:block;margin-bottom:3px">${label} <span style="color:#DC2626">*</span></label>
+          <input id="${id}" type="text" placeholder="${ph}"
+            style="width:100%;border:1px solid ${C.n200};border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;color:${C.navy};background:#fff;box-sizing:border-box"
+            onfocus="this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.12)'"
+            onblur="this.style.borderColor='${C.n200}';this.style.boxShadow='none'"/>
+        </div>`
+      botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 12px">กรอกข้อมูลที่ขาดได้เลยครับ:</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${fields.map(inputRow).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="window.__chat?.uploadMoreDocs()" style="${btnSecondary}">อัปโหลดเอกสารแทน</button>
+          <button onclick="window.__chat?.submitMissingFields()" style="${btnPrimary};flex:1;justify-content:center;display:flex">
+            ${icCheck('#fff', 13)} ยืนยันและวิเคราะห์
+          </button>
+        </div>`)
+    }, 400)
+  }, [withTyping, botMsg])
 
   // ── OCR RESULTS IN CHAT (replaces showForm) ────────────────────
   const showOCRResultsInChat = useCallback((ocrResult: OCRResult) => {
@@ -272,7 +391,38 @@ export default function Home() {
       chooseXML:              () => withTyping(() => showXMLUpload(), 300),
       chooseInvoice:          () => withTyping(() => showInvoiceUpload(), 300),
       chooseFullUpload:       () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseCustomsDocs:      () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       chooseDocs:             () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseInvoiceFirst:     () => withTyping(() => showInvoiceFirstUpload(), 300),
+      sendOtherDoc:           () => {
+        const input = document.getElementById('otherDocInput') as HTMLInputElement
+        const val = input?.value?.trim()
+        if (!val) return
+        userMsg(`มีเอกสาร: ${val}`)
+        withTyping(() => {
+          botMsg(`<p style="font-size:13px;color:${C.n600}">รับทราบแล้วครับ ขอให้อัปโหลด <strong style="color:${C.navy}">${val}</strong> เข้ามาเพื่อ OCR ดึงข้อมูล:</p>`)
+          setTimeout(() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }, 300)
+        }, 400)
+      },
+      processInvoiceFirst:    () => processInvoiceFirstOCR(),
+      uploadMoreDocs:         () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      fillMissingManually:    () => showMissingFieldsForm(),
+      submitMissingFields:    () => {
+        const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value?.trim() || ''
+        const hs = getVal('mf_hs') || '2941.10.00'
+        userMsg('ยืนยันข้อมูลที่กรอก')
+        withTyping(() => showOCRResultsInChat({
+          hsCode: hs,
+          importer: 'บริษัท เฮลท์ฟาร์มา จำกัด',
+          quantity: '250',
+          invoiceNo: 'INV-2024-8834',
+          invoiceDate: '05/06/2568',
+          lotNo: 'LOT-2024-567',
+          uNo: getVal('mf_coa') || 'U-2568-00123',
+          port: 'ท่าเรือแหลมฉบัง',
+          countryOrigin: 'อินเดีย',
+        }), 600)
+      },
       chooseRGoods:           () => {
         if (!isConnected) {
           withTyping(() => addMessage({ role:'bot', content:'show_connect', isHtml:true }), 400)
