@@ -99,20 +99,22 @@ function NavItem({
   expandable?: boolean; expanded?: boolean
   onToggleExpand?: () => void; onClick: () => void
 }) {
+  const baseStyle = {
+    padding: '6px 8px',
+    background: isActive ? L.activeBg : 'transparent',
+    color: isActive ? L.activeText : L.text,
+  }
   return (
-    <button
-      onClick={expandable ? onToggleExpand : onClick}
-      className="w-full flex items-center gap-2.5 rounded-lg text-left transition-all duration-100"
-      style={{
-        padding: '6px 8px',
-        background: isActive ? L.activeBg : 'transparent',
-        color: isActive ? L.activeText : L.text,
-      }}
+    <div
+      className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-100"
+      style={baseStyle}
       onMouseOver={e => { if (!isActive) { e.currentTarget.style.background = L.hover; e.currentTarget.style.color = L.textDark } }}
       onMouseOut={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = isActive ? L.activeText : L.text } }}
     >
-      <Icon size={15} className="flex-shrink-0" />
-      <span className="flex-1 text-[13px] font-medium truncate">{label}</span>
+      <button onClick={onClick} className="flex items-center gap-2.5 flex-1 text-left min-w-0">
+        <Icon size={15} className="flex-shrink-0" />
+        <span className="flex-1 text-[13px] font-medium truncate">{label}</span>
+      </button>
       {badge != null && badge > 0 && (
         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
           style={{ background: '#DC2626', color: '#fff', minWidth: 18, textAlign: 'center' }}>
@@ -120,11 +122,13 @@ function NavItem({
         </span>
       )}
       {expandable && (
-        expanded
-          ? <ChevronDown size={13} className="flex-shrink-0 opacity-50" />
-          : <ChevronRight size={13} className="flex-shrink-0 opacity-50" />
+        <button onClick={onToggleExpand} className="flex-shrink-0 p-0.5 opacity-50 hover:opacity-100">
+          {expanded
+            ? <ChevronDown size={13} />
+            : <ChevronRight size={13} />}
+        </button>
       )}
-    </button>
+    </div>
   )
 }
 
@@ -247,47 +251,27 @@ export function Sidebar({ activeItem, onSelect, needsYouCount = 0, collapsed = f
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2">
+        {/* New Chat button */}
+        <button
+          onClick={() => onSelect('chatbot')}
+          className="w-full flex items-center gap-2 rounded-lg mb-2 transition-all"
+          style={{ padding: '7px 8px', background: 'transparent', color: L.text, border: `1px solid ${L.border}` }}
+          onMouseOver={e => { e.currentTarget.style.background = L.hover; e.currentTarget.style.color = L.textDark }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = L.text }}
+        >
+          <Plus size={13} className="flex-shrink-0" />
+          <span className="text-[13px] font-medium">New Chat</span>
+        </button>
+
         <SectionLabel label="เครื่องมือ" />
 
-        {/* Chatbot — expandable */}
+        {/* Chatbot */}
         <NavItem
           id="chatbot" label="Chatbot" icon={MessageSquareText}
           isActive={activeItem === 'chatbot'}
-          expandable expanded={chatbotExpanded}
-          onToggleExpand={() => setChatbotExpanded(v => !v)}
           onClick={() => onSelect('chatbot')}
         />
 
-        {chatbotExpanded && (
-          <div className="ml-5 mt-0.5 space-y-0.5">
-            <button
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all"
-              style={{ color: L.label, fontSize: 12 }}
-              onClick={() => onSelect('chatbot')}
-              onMouseOver={e => { e.currentTarget.style.background = L.hover; e.currentTarget.style.color = L.textDark }}
-              onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = L.label }}
-            >
-              <Plus size={11} className="flex-shrink-0 opacity-60" />
-              สนทนาใหม่
-            </button>
-            {HISTORY.map(({ id, label }) => (
-              <button key={id}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all"
-                style={{
-                  fontSize: 12,
-                  color: activeItem === id ? L.activeText : L.label,
-                  background: activeItem === id ? L.activeBg : 'transparent',
-                }}
-                onClick={() => onSelect(id)}
-                onMouseOver={e => { if (activeItem !== id) { e.currentTarget.style.background = L.hover; e.currentTarget.style.color = L.textDark } }}
-                onMouseOut={e => { if (activeItem !== id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = L.label } }}
-              >
-                <Clock3 size={11} className="flex-shrink-0 opacity-50" />
-                <span className="truncate font-mono">{label}</span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* คิวงาน */}
         <NavItem

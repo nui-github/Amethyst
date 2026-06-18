@@ -67,10 +67,15 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 </div>
 ```
 
-- **ChatHeader**: full-width across entire screen, contains logo + brand + title + status pill + action icons
-- **Sidebar**: no collapse, fixed width `w-56`, light white theme (see `L` color object in Sidebar.tsx)
-- **Settings section** in sidebar: `padding: '17px 8px'` to match ChatInput bar height (75px)
-- **Queue badge**: red circle on คิวงาน sidebar item, shows `needsYouCount` from `queue.filter(s => s.statusKey === 'needs_you').length`
+- **ChatHeader**: slim inner breadcrumb bar (`h-12`), contains sidebar toggle + breadcrumb + connection status pill + action icons
+- **Sidebar**: collapsible (224px expanded / 48px icon rail when collapsed), white light theme (see `L` color object in Sidebar.tsx)
+  - Company header: `h-12` with logo + "Netbay Agent" + "Assistant" subtitle + chevron
+  - "New Chat" button at top of nav (above section groups)
+  - Section "เครื่องมือ": Chatbot (plain nav, no chevron), คิวงาน (with needsYouCount badge), Dashboard
+  - Section "เอกสาร": ใบอนุญาต, RGoods, ใบขน, Analytics, More
+  - Settings footer
+  - Collapsed state: `CollapsedRail` (48px) shows icon-only buttons with portal tooltip on hover
+- **Queue badge**: red circle on คิวงาน sidebar item, shows `needsYouCount` from `queue.filter(s => s.isNew === true).length`
 - **QuickActionBar**: always-visible chip bar between ChatArea and ChatInput; only renders on chat view (not queue view)
 
 ---
