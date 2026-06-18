@@ -82,7 +82,6 @@ const WELCOME_CONTENT = `<div>
   <p style="font-size:12px;color:${C.n600};margin:0 0 14px;line-height:1.6">ช่วยท่านสร้างใบอนุญาตนำเข้า RGoods และจัดการเอกสารศุลกากรได้ครับ</p>
   <p style="font-size:12px;font-weight:600;color:${C.navy};margin:0 0 10px">ต้องการทำอะไรวันนี้?</p>
   ${menuCard('window.__chat?.showImportLicenseMenu()', icFile(C.blue,18), 'ขอใบอนุญาตนำเข้า', 'RGoods, เครื่องมือแพทย์, วัตถุอันตราย', C.blue)}
-  ${menuCard('window.__chat?.triggerFullUpload()', icUpload(C.navy,18), 'อัปโหลดเอกสาร', 'เพิ่มไฟล์เอกสารเข้าสู่ระบบ', C.navy)}
 </div>`
 
 const WELCOME: ChatMessage = { id: 'welcome', role: 'bot', content: WELCOME_CONTENT, time: '09:00', isHtml: true }
