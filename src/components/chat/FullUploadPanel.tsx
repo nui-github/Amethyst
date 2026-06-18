@@ -57,7 +57,8 @@ export function FullUploadPanel({ onStartOCR }: FullUploadPanelProps) {
         style={{ background: '#F0F0F0', borderColor: '#E0E0E0', color: '#010136' }}
       >
         <CloudUpload size={15} style={{ color: '#0463EF' }} />
-        เอกสารที่ต้องอัปโหลด
+        อัปโหลดเอกสาร
+        <span className="ml-auto text-[10px] font-normal" style={{ color: '#999' }}>อย่างน้อย 1 ไฟล์</span>
       </div>
 
       {/* Slots */}
@@ -74,8 +75,8 @@ export function FullUploadPanel({ onStartOCR }: FullUploadPanelProps) {
               </span>
               <span
                 className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(4,99,239,0.08)', color: '#0463EF' }}
-              >จำเป็น</span>
+                style={{ background: '#F0F0F0', color: '#999999' }}
+              >ไม่บังคับ</span>
             </div>
 
             {/* Drop zone */}
@@ -125,20 +126,22 @@ export function FullUploadPanel({ onStartOCR }: FullUploadPanelProps) {
         ))}
 
         <p className="text-[11px]" style={{ color: '#999999' }}>
-          ℹ️ อัปโหลดได้หลายไฟล์ต่อประเภท — ระบบจะ OCR ทุกไฟล์โดยอัตโนมัติ
+          ℹ️ อัปโหลดเท่าที่มี — ระบบจะ OCR ทุกไฟล์และดึงข้อมูลที่หาได้โดยอัตโนมัติ
         </p>
 
         {/* Start button */}
         <button
-          onClick={() => onStartOCR(slots)}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.01] active:scale-[0.99]"
+          onClick={() => totalFiles > 0 && onStartOCR(slots)}
+          disabled={totalFiles === 0}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
           style={{
-            background: 'linear-gradient(135deg, #034DBA, #0463EF)',
-            boxShadow: '0 4px 14px rgba(4,99,239,0.28)',
+            background: totalFiles > 0 ? 'linear-gradient(135deg, #034DBA, #0463EF)' : '#CCCCCC',
+            boxShadow: totalFiles > 0 ? '0 4px 14px rgba(4,99,239,0.28)' : 'none',
+            cursor: totalFiles > 0 ? 'pointer' : 'not-allowed',
           }}
         >
           <Play size={13} />
-          เริ่ม OCR เอกสารทั้งหมด {totalFiles > 0 && `(${totalFiles} ไฟล์)`}
+          {totalFiles > 0 ? `เริ่ม OCR (${totalFiles} ไฟล์)` : 'เริ่ม OCR เอกสาร — อัปโหลดอย่างน้อย 1 ไฟล์'}
         </button>
       </div>
     </div>
