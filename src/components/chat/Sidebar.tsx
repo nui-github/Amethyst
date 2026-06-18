@@ -231,8 +231,8 @@ export function Sidebar({ activeItem, onSelect, needsYouCount = 0, collapsed = f
       className="flex-shrink-0 flex flex-col h-full overflow-hidden"
       style={{ width: 224, background: L.bg, borderRight: `1px solid ${L.border}` }}
     >
-      {/* Company header */}
-      <div className="flex items-center gap-2.5 px-3 py-3.5 flex-shrink-0"
+      {/* Company header — h-12 to match content breadcrumb bar */}
+      <div className="flex items-center gap-2.5 px-3 h-12 flex-shrink-0"
         style={{ borderBottom: `1px solid ${L.border}` }}>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.3)' }}>
