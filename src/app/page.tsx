@@ -79,16 +79,8 @@ export default function Home() {
   const [isConnected, setIsConnected]     = useState(false)
   const [pendingRef, setPendingRef]        = useState('')
 
-  const needsYouCount = queue.filter(s => s.isNew === true).length
-
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])
-
-  const addToQueue = useCallback((newItems: Shipment[]) =>
-    setQueue(prev => {
-      const existingIds = new Set(prev.map(s => s.id))
-      return [...prev, ...newItems.filter(s => !existingIds.has(s.id))]
-    }), [])
 
   const addMessage = useCallback((msg: Omit<ChatMessage,'id'|'time'>): ChatMessage => {
     const m: ChatMessage = { ...msg, id: generateId(), time: getTime() }
@@ -130,62 +122,6 @@ export default function Home() {
     setStep('idle')
     addMessage({ role: 'bot', content: 'show_spn_list', isHtml: true })
   }, [addMessage])
-
-  const addToQueueFromChat = useCallback((refs: string[]) => {
-    const entries = spnEntries.filter(e => refs.includes(e.ref))
-    const newShipments: Shipment[] = entries.map(e => ({
-      id: e.ref.replace('HTHM', 'IMP-68-') + '-new',
-      hthmRef: e.ref,
-      customsNo: e.customsNo,
-      type: 'IMP' as const,
-      customer: e.importer,
-      contact: '—',
-      contactEmail: '',
-      goods: e.goods,
-      hs: e.hs,
-      origin: e.origin,
-      importedAt: e.date,
-      owner: 'ปวีณา ส.',
-      permitNeeded: true,
-      agency: 'fda' as const,
-      formCode: 'RGoods',
-      formName: 'คำขออนุญาตนำเข้า — รอ AI วิเคราะห์',
-      conf: 0,
-      stage: 0,
-      statusKey: 'needs_you' as const,
-      isNew: true,
-      assess: { conf: 0, reason: 'รอ OCR และ AI วิเคราะห์' },
-      classify: { agency: 'fda' as const, conf: 0, reason: '', alt: [] },
-      draft: { fields: [] },
-      flags: [],
-      audit: [{ time: getTime(), text: `รับงานจากแชท — ${refs.length > 1 ? 'multi-select' : 'single select'}`, by: 'เจ้าหน้าที่' as const }],
-      email: { toName: '', to: '', subject: '', body: '', attName: '' },
-    }))
-
-    addToQueue(newShipments)
-
-    // mark as inQueue in spnEntries
-    setSpnEntries(prev => prev.map(e => refs.includes(e.ref) ? { ...e, inQueue: true } : e))
-
-    const firstId = newShipments[0]?.id ?? ''
-    withTyping(() => {
-      botMsg(`<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:12px;background:rgba(22,234,158,0.08);border:1px solid rgba(22,234,158,0.3)">
-        ${icCheck(C.tealDark, 16)}
-        <div style="flex:1">
-          <p style="font-size:13px;font-weight:700;color:${C.tealDark};margin:0 0 4px">เพิ่มเข้าคิวงาน ${newShipments.length} รายการแล้ว</p>
-          <p style="font-size:11px;color:${C.tealDark};margin:0 0 8px">รายการที่เลือกอยู่ในสถานะ "รอคุณยืนยัน" — ขั้นตอนต่อไปคือ อัปโหลดเอกสาร + OCR ในหน้าคิวงาน</p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${newShipments.map(s =>
-              `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(4,99,239,0.10);color:${C.blue}">${s.hthmRef}</span>`
-            ).join('')}
-          </div>
-          <button onclick="window.__chat?.goToQueue('${firstId}')" style="${btnPrimary};margin-top:10px;font-size:12px">
-            ${icList('#fff', 13)} ไปหน้าคิวงาน
-          </button>
-        </div>
-      </div>`)
-    }, 600)
-  }, [spnEntries, addToQueue, botMsg, withTyping])
 
   // ── CONNECT PROMPT (from header pill click) ────────────────────
   const showConnectPrompt = useCallback(() => {
@@ -706,7 +642,7 @@ export default function Home() {
         onConnectClick={showConnectPrompt}
       />
       <div className="flex flex-1 overflow-hidden">
-      <Sidebar activeItem={sidebarActive} onSelect={(id) => { setSidebarActive(id); if (id !== 'queue') setQueueOpenId(null) }} needsYouCount={needsYouCount} />
+      <Sidebar activeItem={sidebarActive} onSelect={(id) => { setSidebarActive(id); if (id !== 'queue') setQueueOpenId(null) }} needsYouCount={0} />
       {sidebarActive === 'queue' ? (
         <div className="flex-1 overflow-hidden">
           <QueuePage
@@ -727,7 +663,7 @@ export default function Home() {
             onFormChange={handleFormChange} onPreview={handlePreview}
             onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
             onConnected={showConnectOptions}
-            onRequestPermit={addToQueueFromChat}
+            onRequestPermit={() => setSidebarActive('queue')}
           />
           <QuickActionBar
             onCreateRGoods={() => handleSend('สร้าง RGoods')}
