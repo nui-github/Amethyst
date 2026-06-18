@@ -456,7 +456,28 @@ export default function Home() {
       chooseXML:              () => withTyping(() => showXMLUpload(), 300),
       chooseInvoice:          () => withTyping(() => showInvoiceUpload(), 300),
       chooseFullUpload:       () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      chooseCustomsDocs:      () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseCustomsDocs:      () => {
+        userMsg('ใบขนสินค้า')
+        withTyping(() => {
+          const sub = (onclick: string, iconHtml: string, title: string, desc: string, accent = C.blue) =>
+            `<div onclick="${onclick}"
+              style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s"
+              onmouseover="this.style.borderColor='${accent}';this.style.background='${accent}0D'"
+              onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+              <div style="width:36px;height:36px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
+                <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
+              </div>
+              <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
+            </div>`
+          botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 12px">เลือกวิธีอัปโหลดใบขนสินค้า:</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${sub('window.__chat?.chooseFullUpload()', icUpload(C.blue, 16), 'อัปโหลดไฟล์เอกสาร', 'Invoice, ใบขนสินค้า, COA, ใบเลข U — รองรับ PDF, JPG, PNG และ XML', C.blue)}
+              ${sub('window.__chat?.chooseRGoods()', icShip(C.tealDark, 16), 'สร้างด้วยระบบ RGoods (ShippingNet)', 'ดึงข้อมูลจาก ShippingNet โดยตรง ไม่ต้องอัปโหลด', C.tealDark)}
+            </div>`)
+        }, 400)
+      },
       chooseDocs:             () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       chooseInvoiceFirst:     () => withTyping(() => showInvoiceFirstUpload(), 300),
       sendOtherDoc:           () => {
