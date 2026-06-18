@@ -60,7 +60,31 @@ const icSearch  = (c='#0463EF', s=16) => ic('<circle cx="11" cy="11" r="8"/><pat
 const icShip    = (c='#0D8F61', s=18) => ic('<path d="M18 18V5H6v13"/><path d="M2 18h20"/><path d="M12 12v6"/><path d="M12 5V2"/><path d="M8 12h8"/>', s, c)
 const icUpload  = (c='#0463EF', s=32) => ic('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>', s, c)
 
-const WELCOME: ChatMessage = { id: 'welcome', role: 'bot', content: 'welcome', time: '09:00', isHtml: true }
+const menuCard = (onclick: string, iconHtml: string, title: string, desc: string, accent = C.blue) =>
+  `<div onclick="${onclick}"
+    style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s;margin-bottom:8px"
+    onmouseover="this.style.borderColor='${accent}';this.style.background='rgba(4,99,239,0.03)'"
+    onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+    <div style="width:40px;height:40px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
+    <div style="flex:1;min-width:0">
+      <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
+      <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
+    </div>
+    <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
+  </div>`
+
+const WELCOME_CONTENT = `<div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    <p style="font-size:14px;font-weight:700;color:${C.navy};margin:0">สวัสดีครับ! ผมคือ ShippingNet Assistant</p>
+  </div>
+  <p style="font-size:12px;color:${C.n600};margin:0 0 14px;line-height:1.6">ช่วยท่านสร้างใบอนุญาตนำเข้า RGoods และจัดการเอกสารศุลกากรได้ครับ</p>
+  <p style="font-size:12px;font-weight:600;color:${C.navy};margin:0 0 10px">ต้องการทำอะไรวันนี้?</p>
+  ${menuCard('window.__chat?.showImportLicenseMenu()', icFile(C.blue,18), 'ขอใบอนุญาตนำเข้า', 'RGoods, เครื่องมือแพทย์, วัตถุอันตราย', C.blue)}
+  ${menuCard('window.__chat?.sendQuick(\'ดูสถานะใบขน\')', icList(C.tealDark,18), 'ดูสถานะใบขน', 'ตรวจสอบสถานะคำขอและคิวงานทั้งหมด', C.tealDark)}
+  ${menuCard('window.__chat?.triggerFullUpload()', icUpload(C.navy,18), 'อัปโหลดเอกสาร', 'เพิ่มไฟล์เอกสารเข้าสู่ระบบ', C.navy)}
+</div>`
+
+const WELCOME: ChatMessage = { id: 'welcome', role: 'bot', content: WELCOME_CONTENT, time: '09:00', isHtml: true }
 
 export default function Home() {
   const [sidebarActive, setSidebarActive] = useState('chatbot')
@@ -96,24 +120,181 @@ export default function Home() {
     setTimeout(() => { setIsTyping(false); fn() }, delay)
   }, [])
 
+  // ── IMPORT LICENSE MENU ────────────────────────────────────────
+  const showImportLicenseMenu = useCallback(() => {
+    userMsg('ขอใบอนุญาตนำเข้า')
+    withTyping(() => {
+      const subCard = (onclick: string, iconHtml: string, title: string, desc: string) =>
+        `<div onclick="${onclick}"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s;margin-bottom:8px"
+          onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.03)'"
+          onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(4,99,239,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
+          <div style="flex:1">
+            <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
+            <p style="font-size:11px;color:${C.n500};margin:2px 0 0">${desc}</p>
+          </div>
+          <span style="color:${C.n300};font-size:16px">›</span>
+        </div>`
+      botMsg(`<p style="font-size:12px;font-weight:600;color:${C.navy};margin:0 0 10px">เลือกประเภทการขอใบอนุญาต:</p>
+        ${subCard('window.__chat?.chooseDocs()', icUpload(C.blue,16), 'อัปโหลดใบขนและเอกสาร', 'Invoice, COA, ใบเลข U — OCR อัตโนมัติ')}
+        ${subCard('window.__chat?.chooseXML()', icFile('#1565C0',16), 'อัปโหลดใบขน (ไฟล์ XML)', 'นำเข้าข้อมูลจาก XML ไม่ต้องกรอกเพิ่ม')}
+        ${subCard('window.__chat?.chooseRGoods()', icShip(C.tealDark,16), 'สร้างด้วยระบบ RGoods (ShippingNet)', 'ดึงข้อมูลจาก ShippingNet โดยตรง')}`)
+    }, 400)
+  }, [userMsg, botMsg, withTyping])
+
+  // ── OCR RESULTS IN CHAT (replaces showForm) ────────────────────
+  const showOCRResultsInChat = useCallback((ocrResult: OCRResult) => {
+    setStep('form')
+    const hs  = ocrResult.hsCode        ?? '2941.10.00'
+    const imp = ocrResult.importer      ?? 'บริษัท เฮลท์ฟาร์มา จำกัด'
+    const qty = ocrResult.quantity      ? `${ocrResult.quantity} กิโลกรัม` : '250 กิโลกรัม'
+    const inv = ocrResult.invoiceNo     ?? 'INV-2024-8834'
+    const lot = ocrResult.lotNo         ?? 'LOT-2024-567'
+    const uno = ocrResult.uNo           ?? 'U-2568-00123'
+    const port = ocrResult.port         ?? 'ท่าเรือแหลมฉบัง'
+    const ori  = ocrResult.countryOrigin ?? 'อินเดีย'
+    const invDate = ocrResult.invoiceDate ?? '05/06/2568'
+
+    // Step 1: OCR data card
+    withTyping(() => {
+      botMsg(`<div style="${cardWrap}">
+        <div style="${cardHead};display:flex;align-items:center;gap:6px">${icFile(C.blue,13)} ข้อมูลที่ดึงได้จากเอกสาร</div>
+        <div style="${cardBody}">
+          <div style="${rowStyle}"><span style="color:${C.n600}">ผู้นำเข้า</span><span style="font-weight:700;color:${C.blue}">${imp}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">Invoice No.</span><span style="font-weight:600;color:${C.navy}">${inv}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">วันที่ Invoice</span><span style="font-weight:600;color:${C.navy}">${invDate}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">HS Code</span><span style="font-weight:700;color:${C.blue}">${hs}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">ปริมาณ</span><span style="font-weight:600;color:${C.navy}">${qty}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">ประเทศต้นทาง</span><span style="font-weight:600;color:${C.navy}">${ori}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">ท่าเรือนำเข้า</span><span style="font-weight:600;color:${C.navy}">${port}</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">Lot No.</span><span style="font-weight:600;color:${C.navy}">${lot}</span></div>
+          <div style="${rowStyle};border:none"><span style="color:${C.n600}">เลข U</span><span style="font-weight:600;color:${C.navy}">${uno}</span></div>
+        </div>
+      </div>`)
+
+      // Step 2: AI analysis
+      withTyping(() => {
+        botMsg(`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(4,99,239,0.05);border:1px solid rgba(4,99,239,0.18);margin-bottom:8px">
+          ${icSearch(C.blue,15)}
+          <div>
+            <p style="font-size:12px;font-weight:700;color:${C.navy};margin:0 0 6px">AI วิเคราะห์ HS Code ${hs}</p>
+            <p style="font-size:11px;color:${C.n600};margin:0 0 6px;line-height:1.6">HS ${hs} จัดเป็นวัตถุดิบยาปฏิชีวนะ (Amoxicillin) → ต้องขออนุญาตนำเข้าวัตถุดิบยา (RGoods) จาก อย. ตาม พ.ร.บ. ยา พ.ศ. 2510 มาตรา 15</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span style="${badgeAmber}">ต้องขออนุญาต</span>
+              <span style="${badgeBlue}">หน่วยงาน: อย.</span>
+              <span style="${badgeGreen}">ความมั่นใจ: 96%</span>
+            </div>
+          </div>
+        </div>
+        <div style="${cardWrap}">
+          <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.navy,13)} ร่างคำขออนุญาต (RGoods — อย.)</div>
+          <div style="${cardBody}">
+            <div style="${rowStyle}"><span style="color:${C.n600}">ผู้ขออนุญาต</span><span style="font-weight:700;color:${C.blue}">${imp}</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">ชื่อวัตถุดิบยา (INN)</span><span style="font-weight:600;color:${C.navy}">Amoxicillin Trihydrate</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">ปริมาณนำเข้า</span><span style="display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#B45309">${qty} ${icWarn('#B45309',12)}</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">ประเทศต้นทาง</span><span style="font-weight:600;color:${C.navy}">${ori}</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">ด่านนำเข้า</span><span style="font-weight:600;color:${C.navy}">${port}</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">เลขใบรับรอง GMP</span><span style="display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#B45309">IND-GMP-2024-••3821 ${icWarn('#B45309',12)}</span></div>
+            <div style="${rowStyle}"><span style="color:${C.n600}">Invoice No.</span><span style="font-weight:600;color:${C.navy}">${inv}</span></div>
+            <div style="${rowStyle};border:none"><span style="color:${C.n600}">Lot No.</span><span style="font-weight:600;color:${C.navy}">${lot}</span></div>
+          </div>
+        </div>`)
+
+        // Step 3: Flags + action buttons
+        withTyping(() => {
+          botMsg(`<div style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1px solid #FDE68A;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              ${icWarn('#B45309',15)}
+              <span style="font-size:12px;font-weight:700;color:#B45309">พบ 2 จุดที่ต้องตรวจสอบ</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:11px;color:#92400E;padding:6px 10px;background:#FEF3C7;border-radius:8px;line-height:1.5">
+                <strong>1. ปริมาณนำเข้ามี 2 ค่า</strong><br>Invoice: 250 กก. vs Packing List: 248.5 กก. — โปรดเลือกค่าที่ถูกต้องก่อนยื่น
+              </div>
+              <div style="font-size:11px;color:#92400E;padding:6px 10px;background:#FEF3C7;border-radius:8px;line-height:1.5">
+                <strong>2. เลขใบรับรอง GMP อ่านไม่ชัด 3 ตัวท้าย</strong><br>AI ความมั่นใจ 62% — โปรดเทียบกับเอกสารต้นฉบับ
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
+              ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
+            </button>
+            <button onclick="window.__chat?.confirmDraft()" style="${btnPrimary};flex:1;justify-content:center">
+              ${icCheck('#fff',13)} ยืนยันและดำเนินการต่อ
+            </button>
+          </div>`)
+        }, 900)
+      }, 1200)
+    }, 600)
+  }, [setStep, botMsg, withTyping])
+
+  // ── EMAIL DRAFT IN CHAT ────────────────────────────────────────
+  const showEmailDraftInChat = useCallback(() => {
+    setStep('preview')
+    withTyping(() => {
+      botMsg(`<div style="${cardWrap}">
+        <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.blue,13)} ร่างอีเมลถึงลูกค้า</div>
+        <div style="${cardBody}">
+          <div style="${rowStyle}"><span style="color:${C.n600}">ถึง</span><span style="font-weight:600;color:${C.navy}">คุณสมหญิง วัฒนกุล &lt;somying@healthpharma.co.th&gt;</span></div>
+          <div style="${rowStyle}"><span style="color:${C.n600}">หัวข้อ</span><span style="font-weight:600;color:${C.navy};font-size:11px">ขอยืนยันข้อมูลใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)</span></div>
+          <div style="padding-top:10px">
+            <p style="font-size:10px;font-weight:600;text-transform:uppercase;color:${C.n500};margin:0 0 6px">เนื้อหา</p>
+            <div style="padding:10px;background:${C.n50};border:1px solid ${C.n200};border-radius:8px;font-size:11px;color:${C.n600};line-height:1.7;white-space:pre-wrap">เรียน คุณสมหญิง วัฒนกุล
+
+ตามที่บริษัทได้นำเข้าวัตถุดิบยา Amoxicillin Trihydrate ตามใบขนสินค้าเลขที่ A012-25680617-00891 นั้น
+
+ระบบได้จัดเตรียมคำขออนุญาตนำเข้าวัตถุดิบยา (RGoods) เพื่อยื่นต่อ อย. รบกวนตรวจสอบความถูกต้องของข้อมูล โดยเฉพาะปริมาณนำเข้าและเลขใบรับรอง GMP ตามเอกสารแนบ
+
+หากข้อมูลถูกต้องครบถ้วน กรุณาตอบกลับอีเมลนี้เพื่อยืนยัน
+
+ขอแสดงความนับถือ
+ฝ่ายพิธีการ ShippingNet</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <button onclick="window.__chat?.customerConfirmedInChat()" style="${btnPrimary};width:100%;justify-content:center">
+          ${icCheck('#fff',13)} ลูกค้ายืนยันเอกสารแล้ว
+        </button>
+      </div>`)
+    }, 600)
+  }, [setStep, botMsg, withTyping])
+
   // ── Expose to inline HTML buttons ─────────────────────────────
   useEffect(() => {
     (window as any).__chat = {
-      sendQuick:          (t: string) => handleSend(t),
-      triggerUpload:      () => withTyping(() => showUpload(), 300),
-      triggerFullUpload:  () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      startOCRDemo:       () => startOCR(),
-      chooseXML:          () => withTyping(() => showXMLUpload(), 300),
-      chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
-      chooseFullUpload:   () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      processXML:         () => withTyping(() => xmlDone(), 2000),
-      processInvoice:     () => withTyping(() => showHsAnalysis(), 2500),
-      proceedFromInvoice: () => withTyping(() => showFormFromInvoice(), 700),
-      spnNotFoundBack:    () => withTyping(() => spnNotFound(currentRef), 300),
-      onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
-      triggerConnect:     () => showConnectPrompt(),
-      showSPNList:        () => withTyping(() => showSPNListInChat(), 300),
-      goToQueue:          (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
+      sendQuick:              (t: string) => handleSend(t),
+      triggerUpload:          () => withTyping(() => showUpload(), 300),
+      triggerFullUpload:      () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      startOCRDemo:           () => startOCR(),
+      chooseXML:              () => withTyping(() => showXMLUpload(), 300),
+      chooseInvoice:          () => withTyping(() => showInvoiceUpload(), 300),
+      chooseFullUpload:       () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseDocs:             () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseRGoods:           () => {
+        if (!isConnected) {
+          withTyping(() => addMessage({ role:'bot', content:'show_connect', isHtml:true }), 400)
+        } else {
+          withTyping(() => showSPNListInChat(), 400)
+        }
+      },
+      processXML:             () => withTyping(() => xmlDone(), 2000),
+      processInvoice:         () => withTyping(() => showHsAnalysis(), 2500),
+      proceedFromInvoice:     () => withTyping(() => showFormFromInvoice(), 700),
+      spnNotFoundBack:        () => withTyping(() => spnNotFound(currentRef), 300),
+      onConnected:            (ref: string) => withTyping(() => showConnectOptions(ref), 600),
+      triggerConnect:         () => showConnectPrompt(),
+      showSPNList:            () => withTyping(() => showSPNListInChat(), 300),
+      goToQueue:              (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
+      showImportLicenseMenu:  () => showImportLicenseMenu(),
+      confirmDraft:           () => { userMsg('ยืนยันและดำเนินการต่อ'); showEmailDraftInChat() },
+      editAndReupload:        () => {
+        userMsg('แก้ไข / อัปโหลดใหม่')
+        withTyping(() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }, 300)
+      },
+      customerConfirmedInChat: () => { userMsg('ลูกค้ายืนยันเอกสารแล้ว'); setShowPreview(true) },
     }
   })
 
@@ -540,9 +721,9 @@ export default function Home() {
     setIsTyping(true)
     runOCRFlow(files).then(result => {
       setIsTyping(false)
-      setTimeout(() => showForm(result), 600)
+      showOCRResultsInChat(result)
     })
-  }, [userMsg, addMessage, runOCRFlow])
+  }, [userMsg, addMessage, runOCRFlow, showOCRResultsInChat])
 
   const handleFullUploadOCR = useCallback((slots: UploadSlots) => {
     const files = Object.values(slots).flat()
@@ -666,10 +847,10 @@ export default function Home() {
             onRequestPermit={() => setSidebarActive('queue')}
           />
           <QuickActionBar
-            onCreateRGoods={() => handleSend('สร้าง RGoods')}
+            onCreateRGoods={() => showImportLicenseMenu()}
             onShowQueueStatus={showQueueStatusInChat}
             onGoToQueue={() => setSidebarActive('queue')}
-            onUpload={() => handleSend('upload เอกสาร Invoice')}
+            onUpload={() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }}
           />
           <ChatInput onSend={handleSend} disabled={isTyping} />
         </div>
