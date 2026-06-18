@@ -349,6 +349,71 @@ export default function Home() {
     }, 600)
   }, [setStep, botMsg, withTyping])
 
+  // ── PREVIEW IN CHAT (replaces PreviewModal) ────────────────────
+  const showPreviewInChat = useCallback(() => {
+    setStep('preview')
+    withTyping(() => {
+      const imp  = formData.importer      || 'บริษัท เฮลท์ฟาร์มา จำกัด'
+      const port = formData.port          || 'ท่าเรือแหลมฉบัง'
+      const hs   = formData.hsCode        || '2941.10.00'
+      const ori  = formData.countryOrigin || 'อินเดีย'
+      const qty  = formValues.quantity    || '250'
+      const lot  = formValues.lotNo       || 'LOT-2024-567'
+      const inv  = formValues.invoiceNo   || 'INV-2024-8834'
+      const invDate = formValues.invoiceDate || '05/06/2568'
+      const uno  = formValues.uNo         || 'U-2568-00123'
+      const dreg = formValues.drugRegNo   || '—'
+      const idate= formValues.importDate  || '—'
+      const sectionLabel = (t: string) =>
+        `<p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${C.n500};margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid ${C.n200}">${t}</p>`
+      const row = (label: string, val: string, src: string) => {
+        const srcColor = src === 'OCR' ? C.tealDark : src === 'SPN' ? C.blue : '#B45309'
+        const srcBg    = src === 'OCR' ? 'rgba(22,234,158,0.12)' : src === 'SPN' ? 'rgba(4,99,239,0.10)' : 'rgba(255,165,0,0.12)'
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed ${C.n200};font-size:13px">
+          <span style="color:${C.n600}">${label}</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:600;color:${C.navy}">${val}</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:${srcBg};color:${srcColor}">${src}</span>
+          </span>
+        </div>`
+      }
+      botMsg(`<div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid ${C.n100}">
+          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,${C.blueDeep},${C.blue});display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            ${icList('#fff', 20)}
+          </div>
+          <div>
+            <p style="font-size:15px;font-weight:800;color:${C.navy};margin:0">ตรวจสอบข้อมูลก่อนส่งกรม</p>
+            <p style="font-size:11px;color:${C.n500};margin:2px 0 0">ใบอนุญาตนำเข้าวัตถุดิบยา (RGoods) — อย.</p>
+          </div>
+          <span style="margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,165,0,0.12);color:#B45309">รอยืนยัน</span>
+        </div>
+        ${sectionLabel('ข้อมูลผู้นำเข้า')}
+        ${row('ผู้นำเข้า', imp, 'OCR')}
+        ${row('ท่าเรือนำเข้า', port, 'OCR')}
+        ${sectionLabel('ข้อมูลสินค้า')}
+        ${row('HS Code', hs, 'OCR')}
+        ${row('ประเทศต้นทาง', ori, 'OCR')}
+        ${row('จำนวน', qty + ' กิโลกรัม', 'OCR')}
+        ${row('Lot Number', lot, 'OCR')}
+        ${sectionLabel('เอกสารอ้างอิง')}
+        ${row('เลข Invoice', inv, 'OCR')}
+        ${row('วันที่ Invoice', invDate, 'OCR')}
+        ${row('เลข U', uno, 'OCR')}
+        ${row('เลขทะเบียนยา', dreg || '—', 'user')}
+        ${row('วันที่นำเข้า', idate || '—', 'user')}
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary};flex:1;justify-content:center;display:flex">
+            ${icX(C.n600, 13)} แก้ไขข้อมูล
+          </button>
+          <button onclick="window.__chat?.confirmSubmitFromChat()" style="${btnPrimary};flex:2;justify-content:center;display:flex;background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy}">
+            ${icCheck(C.navy, 14)} ยืนยันส่งกรม
+          </button>
+        </div>
+      </div>`)
+    }, 600)
+  }, [setStep, formData, formValues, botMsg, withTyping])
+
   // ── EMAIL DRAFT IN CHAT ────────────────────────────────────────
   const showEmailDraftInChat = useCallback(() => {
     setStep('preview')
@@ -439,12 +504,14 @@ export default function Home() {
       showSPNList:            () => withTyping(() => showSPNListInChat(), 300),
       goToQueue:              (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
       showImportLicenseMenu:  () => showImportLicenseMenu(),
+      showPreviewInChat:      () => showPreviewInChat(),
       confirmDraft:           () => { userMsg('ยืนยันและดำเนินการต่อ'); showEmailDraftInChat() },
       editAndReupload:        () => {
         userMsg('แก้ไข / อัปโหลดใหม่')
         withTyping(() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }, 300)
       },
-      customerConfirmedInChat: () => { userMsg('ลูกค้ายืนยันเอกสารแล้ว'); setShowPreview(true) },
+      customerConfirmedInChat:  () => { userMsg('ลูกค้ายืนยันเอกสารแล้ว'); showPreviewInChat() },
+      confirmSubmitFromChat:    () => { userMsg('ยืนยันส่งกรม'); handleSubmit() },
     }
   })
 

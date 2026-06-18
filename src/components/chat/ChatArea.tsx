@@ -114,20 +114,21 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
     )
   }
 
-  // Bot bubble — special content types
+  // Bot bubble — centered full-width card
   const SPECIALS = ['welcome','ocr_progress','show_form','show_full_upload','show_connect','show_spn_list']
   return (
-    <div className="flex items-end gap-2.5 msg-appear">
-      <div
-        className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-        style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 3px 10px rgba(4,99,239,0.28)' }}
-      >
-        AI
-      </div>
-      <div className="max-w-[85%]">
+    <div className="flex flex-col items-center w-full msg-appear">
+      <div className="w-full" style={{ maxWidth: '680px' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <div
+            className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.28)' }}
+          >AI</div>
+          <span className="text-[11px] font-semibold" style={{ color: '#8080A5' }}>ShippingNet Assistant</span>
+        </div>
         <div
-          className="rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed"
-          style={{ background: '#fff', border: '1px solid #DDE1F8', boxShadow: '0 2px 10px rgba(4,10,80,0.06)', color: '#010136' }}
+          className="rounded-2xl px-5 py-4 leading-relaxed w-full"
+          style={{ background: '#fff', border: '1px solid #DDE1F8', boxShadow: '0 2px 12px rgba(4,10,80,0.07)', color: '#010136', fontSize: '13px' }}
         >
           {msg.content === 'welcome' && <WelcomeMessage onQuickSend={onQuickSend} />}
           {msg.content === 'ocr_progress' && <OcrProgress progress={ocrProgress} completedStages={ocrStages} />}
