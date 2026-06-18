@@ -166,18 +166,18 @@ export default function Home() {
   // ── INVOICE-FIRST UPLOAD ────────────────────────────────────────
   const showInvoiceFirstUpload = useCallback(() => {
     setStep('invoice_upload')
-    botMsg(`<p style="font-size:13px;font-weight:600;color:${C.tealDark};margin:0 0 8px;display:flex;align-items:center;gap:6px">${icList(C.tealDark, 15)} อัปโหลด Invoice</p>
+    botMsg(`<p style="font-size:13px;font-weight:600;color:${C.blue};margin:0 0 8px;display:flex;align-items:center;gap:6px">${icList(C.blue, 15)} อัปโหลด Invoice</p>
       <p style="font-size:12px;color:${C.n600};margin:0 0 12px;line-height:1.6">AI จะ OCR Invoice → แสดงข้อมูลที่ได้ → แจ้งข้อมูลที่ยังขาด → ช่วยกรอกจนครบก่อนร่างใบอนุญาต</p>
       <div onclick="window.__chat?.processInvoiceFirst()"
-        style="border:2px dashed rgba(13,143,97,0.35);border-radius:14px;padding:24px;text-align:center;background:rgba(22,234,158,0.04);cursor:pointer;transition:all .2s"
-        onmouseover="this.style.borderColor='${C.tealMid}';this.style.background='rgba(22,234,158,0.08)'"
-        onmouseout="this.style.borderColor='rgba(13,143,97,0.35)';this.style.background='rgba(22,234,158,0.04)'">
-        <div style="display:flex;justify-content:center;margin-bottom:10px">${icUpload(C.tealDark, 36)}</div>
-        <p style="font-size:13px;font-weight:700;color:${C.tealDark};margin:0">คลิกหรือลากไฟล์ Invoice มาวาง</p>
+        style="border:2px dashed rgba(4,99,239,0.3);border-radius:14px;padding:24px;text-align:center;background:rgba(4,99,239,0.04);cursor:pointer;transition:all .2s"
+        onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.08)'"
+        onmouseout="this.style.borderColor='rgba(4,99,239,0.3)';this.style.background='rgba(4,99,239,0.04)'">
+        <div style="display:flex;justify-content:center;margin-bottom:10px">${icUpload(C.blue, 36)}</div>
+        <p style="font-size:13px;font-weight:700;color:${C.blue};margin:0">คลิกหรือลากไฟล์ Invoice มาวาง</p>
         <p style="font-size:11px;color:${C.n500};margin:4px 0 0">PDF, JPG, PNG, Excel — สูงสุด 20MB</p>
       </div>
       <button onclick="window.__chat?.processInvoiceFirst()" style="${btnPrimary};margin-top:10px;width:100%;justify-content:center;display:flex">
-        ${icSearch(C.navy, 13)} OCR และวิเคราะห์ Invoice
+        ${icSearch('#fff', 13)} OCR และวิเคราะห์ Invoice
       </button>`)
   }, [botMsg])
 
