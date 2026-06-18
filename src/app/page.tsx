@@ -360,11 +360,11 @@ export default function Home() {
                 style="margin-top:8px;width:100%;border:1px solid #FDE68A;border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;background:#FFFEF0;color:#92400E;outline:none;box-sizing:border-box"
                 onfocus="this.style.borderColor='${C.tealMid}'" onblur="this.style.borderColor='#FDE68A'"/>`
             )}
-          </div>`)
-          botMsg(`<div style="display:flex;gap:8px;margin-top:2px">
-            <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
-              ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
-            </button>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E0E0E0">
+              <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
+                ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
+              </button>
+            </div>
           </div>`)
         }, 900)
       }, 1200)
