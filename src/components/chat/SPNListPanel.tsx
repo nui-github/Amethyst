@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, CheckSquare, Square, FileCheck2, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileCheck2, Plus } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import type { SPNEntry } from '@/lib/types'
 
 const PAGE_SIZE = 5
@@ -56,12 +57,11 @@ export function SPNListPanel({ entries, onRequestPermit }: SPNListPanelProps) {
       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E0E0E0' }}>
         {/* Header */}
         <div className="flex items-center px-3 py-2 gap-2" style={{ background: '#F0F0F0', borderBottom: '1px solid #E0E0E0' }}>
-          <button onClick={togglePage} className="flex-shrink-0">
-            {allPageSelected
-              ? <CheckSquare size={14} style={{ color: '#0463EF' }} />
-              : <Square size={14} style={{ color: '#CCCCCC' }} />
-            }
-          </button>
+          <Checkbox
+            checked={allPageSelected}
+            onCheckedChange={togglePage}
+            className="flex-shrink-0"
+          />
           <span className="text-[10px] font-bold uppercase tracking-wide flex-shrink-0" style={{ color: '#999', width: 88 }}>Ref / ใบขน</span>
           <span className="text-[10px] font-bold uppercase tracking-wide flex-1" style={{ color: '#999' }}>สินค้า / ผู้นำเข้า</span>
           <span className="text-[10px] font-bold uppercase tracking-wide flex-shrink-0" style={{ color: '#999', width: 56 }}>วันที่</span>
@@ -83,16 +83,12 @@ export function SPNListPanel({ entries, onRequestPermit }: SPNListPanelProps) {
               }}
             >
               {/* Checkbox */}
-              <button
-                onClick={() => !inQueue && toggle(entry.ref)}
-                className="flex-shrink-0"
+              <Checkbox
+                checked={isSel}
                 disabled={inQueue}
-              >
-                {isSel
-                  ? <CheckSquare size={14} style={{ color: '#0463EF' }} />
-                  : <Square size={14} style={{ color: inQueue ? '#E0E0E0' : '#CCCCCC' }} />
-                }
-              </button>
+                onCheckedChange={() => !inQueue && toggle(entry.ref)}
+                className="flex-shrink-0"
+              />
 
               {/* Ref */}
               <div className="flex-shrink-0" style={{ width: 88 }}>

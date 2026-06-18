@@ -5,6 +5,8 @@ import {
   FileCheck2, Search, Filter, RotateCcw, Send, Upload, MessageSquare,
   TrendingUp, Package, Ban, Plus,
 } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { toast as sonnerToast } from 'sonner'
 import { AGENCY_LABEL, AGENCY_SHORT, STATUS_META } from '@/lib/mock/queue'
 import { OcrProgress } from '@/components/chat/OcrProgress'
 import { useOCRFlow }  from '@/hooks/useOCRFlow'
@@ -249,7 +251,6 @@ function DetailView({
   const [ocrDone, setOcrDone] = useState(false)
   const [customerConfirmed, setCustomerConfirmed] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     setActiveTab(shipment.draft.fields.length === 0 && shipment.statusKey === 'needs_you' ? 'upload' : 'assess')
@@ -257,7 +258,6 @@ function DetailView({
     setOcrDone(false)
     setCustomerConfirmed(false)
     setShowPreview(false)
-    setToast(null)
   }, [shipment.id])
 
   const handleOCR = async () => {
@@ -381,22 +381,21 @@ function DetailView({
       )}
 
       {/* Tabs */}
-      <div className="flex gap-0 px-6 mt-4 flex-shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
-        {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className="px-4 py-2 text-xs font-semibold whitespace-nowrap"
-            style={{
-              color: activeTab === tab.id ? '#0463EF' : '#9CA3AF',
-              borderBottom: activeTab === tab.id ? '2px solid #0463EF' : '2px solid transparent',
-              marginBottom: -1,
-            }}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={v => setActiveTab(v as typeof activeTab)} className="flex flex-col flex-1 min-h-0 mt-4">
+        <TabsList variant="line" className="px-6 flex-shrink-0 w-full justify-start rounded-none border-b border-[#E5E7EB] h-auto pb-0 gap-0">
+          {tabs.map(tab => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="px-4 py-2 text-xs font-semibold rounded-none border-b-2 data-selected:border-[#0463EF] data-selected:text-[#0463EF] border-transparent text-[#9CA3AF] hover:text-[#374151]"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {/* Tab content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
 
         {activeTab === 'upload' && (
           <div className="space-y-4">
@@ -550,6 +549,7 @@ function DetailView({
           </Section>
         )}
       </div>
+      </Tabs>
 
       {/* Action bar */}
       {shipment.statusKey === 'needs_you' && !isOCRing && shipment.draft.fields.length > 0 && (
@@ -648,8 +648,7 @@ function DetailView({
                 onClick={() => {
                   updateShipment(shipment.id, { statusKey: 'submitted', stage: 8 })
                   setShowPreview(false)
-                  setToast('ยื่นเอกสารถึงกรมเรียบร้อยแล้ว')
-                  setTimeout(() => setToast(null), 3000)
+                  sonnerToast.success('ยื่นเอกสารถึงกรมเรียบร้อยแล้ว')
                 }}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
@@ -660,13 +659,6 @@ function DetailView({
         </div>
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg flex items-center gap-2 whitespace-nowrap"
-          style={{ background: 'linear-gradient(135deg,#0D8F61,#16EA9E)' }}>
-          <CheckCircle2 size={14} /> {toast}
-        </div>
-      )}
     </div>
   )
 }

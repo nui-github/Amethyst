@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, KeyboardEvent } from 'react'
 import { Send, Paperclip } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ChatInputProps {
   onSend: (text: string) => void
@@ -55,7 +56,7 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
           el.style.boxShadow = 'none'
         }}
       >
-        <textarea
+        <Textarea
           ref={textareaRef}
           value={text}
           onChange={e => setText(e.target.value)}
@@ -63,8 +64,8 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
           onInput={handleInput}
           rows={1}
           placeholder="พิมพ์คำสั่ง เช่น สร้าง RGoods ด้วยใบขน Ref : HTHM000000003..."
-          className="flex-1 bg-transparent text-sm outline-none leading-relaxed"
-          style={{ color: '#010136', minHeight: '20px', maxHeight: '100px', height: '20px' }}
+          className="flex-1 bg-transparent text-sm outline-none leading-relaxed border-0 ring-0 focus-visible:ring-0 focus-visible:border-0 p-0 min-h-[20px] max-h-[100px] resize-none"
+          style={{ color: '#010136', height: '20px' }}
         />
         <button
           onClick={onAttach}

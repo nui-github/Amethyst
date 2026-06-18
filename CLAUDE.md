@@ -9,10 +9,12 @@ Built with Next.js 14 App Router + TypeScript + Tailwind CSS + Lucide React.
 ## Tech Stack
 - **Framework**: Next.js 14 (App Router, `src/` directory)
 - **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS + inline `style={}` for BizX brand colors
+- **Styling**: Tailwind CSS + shadcn/ui + inline `style={}` for BizX brand colors
+- **Component Library**: shadcn/ui (style: `base-nova`, primitives: `@base-ui/react`) — installed on top of Tailwind
 - **Icons**: Lucide React v0.383.0 (React components in `.tsx`; inline SVG strings in bot HTML messages via `ic()` helpers)
 - **Font**: IBM Plex Sans Thai (loaded via `<link>` in layout.tsx)
-- **Utilities**: clsx + tailwind-merge
+- **Toast**: Sonner (`<Toaster>` in layout.tsx; call via `import { toast } from 'sonner'`)
+- **Utilities**: clsx + tailwind-merge (`cn()` helper in `src/lib/utils.ts`)
 
 ---
 
@@ -78,7 +80,7 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 src/
 ├── app/
 │   ├── layout.tsx          ← Root layout, IBM Plex Sans Thai font
-│   ├── globals.css         ← Tailwind + BizX CSS vars + .ocr-fill + .msg-appear
+│   ├── globals.css         ← Tailwind + shadcn CSS vars (BizX hex values) + .ocr-fill + .msg-appear
 │   └── page.tsx            ← ALL state + ALL chat logic + inline HTML helpers
 ├── components/
 │   ├── chat/
@@ -97,9 +99,18 @@ src/
 │   │   └── QuickActionBar.tsx   ← 4-chip bar above ChatInput: สร้าง RGoods / ดูสถานะใบขน / จัดการคิวงาน / อัปโหลดเอกสาร
 │   ├── queue/
 │   │   └── QueuePage.tsx        ← Full queue UI: ListView (left) + DetailView (right), OCR + draft + email tabs
-│   └── ui/
-│       ├── Badge.tsx            ← Reusable badge variants
-│       └── Button.tsx           ← Reusable button variants
+│   └── ui/                  ← shadcn/ui components (generated via `npx shadcn add`)
+│       ├── button.tsx           ← shadcn Button (variants: default/outline/ghost/secondary/destructive)
+│       ├── badge.tsx            ← shadcn Badge
+│       ├── dialog.tsx           ← shadcn Dialog (replaces custom fixed-inset modals)
+│       ├── input.tsx            ← shadcn Input
+│       ├── textarea.tsx         ← shadcn Textarea (used in ChatInput.tsx)
+│       ├── tabs.tsx             ← shadcn Tabs with variant="line" (used in QueuePage DetailView)
+│       ├── checkbox.tsx         ← shadcn Checkbox (used in SPNListPanel.tsx)
+│       ├── scroll-area.tsx      ← shadcn ScrollArea
+│       ├── progress.tsx         ← shadcn Progress
+│       ├── separator.tsx        ← shadcn Separator
+│       └── sonner.tsx           ← Toaster wrapper for sonner (mounted in layout.tsx)
 ├── hooks/
 │   └── useOCRFlow.ts       ← Shared OCR hook (used by both chat page.tsx and QueuePage)
 └── lib/
@@ -383,6 +394,10 @@ npm run lint   # ESLint
 12. **Shared OCR logic** — always use `useOCRFlow` hook; never duplicate OCR state in components
 13. **Queue state** — `queue: Shipment[]` lives in page.tsx; mutate only via `updateShipment()` and `addToQueue()`
 14. **TypeScript Set spread** — use `Array.from(new Set([...]))` not `[...new Set([...])]` (ES target compatibility)
+15. **shadcn/ui components** — use from `src/components/ui/`; available: `button`, `badge`, `dialog`, `input`, `textarea`, `tabs`, `scroll-area`, `progress`, `checkbox`, `separator`, `sonner`
+16. **shadcn theming** — CSS vars in `globals.css` `@layer base :root {}` are mapped to BizX hex values (`--primary: #0463EF`, `--accent: #16EA9E` etc.); never change these vars to oklch or other formats
+17. **BizX gradient buttons** — keep as raw `<button>` with inline `style={{ background: 'linear-gradient(...)' }}`; do not replace with shadcn Button for gradient CTAs
+18. **Toast notifications** — use `import { toast } from 'sonner'` (not custom state); `<Toaster>` is already in layout.tsx
 
 ---
 

@@ -4,6 +4,10 @@
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
 
+@import "tw-animate-css";
+
+@import "shadcn/tailwind.css";
+
 /* ── BizX Design System ── */
 :root {
   /* Primary Navy (Base #010136) */
@@ -100,3 +104,46 @@ textarea { resize: none; overflow: hidden; }
   color: #010136;
 }
 .btn-teal:hover { background: linear-gradient(135deg, #16EA9E, #11BB7F); }
+
+@layer base {
+  :root {
+    /* BizX Brand → shadcn tokens */
+    --background:         #F2F2F2;
+    --foreground:         #010136;
+    --card:               #FFFFFF;
+    --card-foreground:    #010136;
+    --popover:            #FFFFFF;
+    --popover-foreground: #010136;
+    --primary:            #0463EF;
+    --primary-foreground: #FFFFFF;
+    --secondary:          #F0F0F0;
+    --secondary-foreground:#010136;
+    --muted:              #F0F0F0;
+    --muted-foreground:   #8080A5;
+    --accent:             #16EA9E;
+    --accent-foreground:  #010136;
+    --destructive:        oklch(0.577 0.245 27.325);
+    --destructive-foreground:#FFFFFF;
+    --border:             #E0E0E0;
+    --input:              #E0E0E0;
+    --ring:               #0463EF;
+    --radius:             0.625rem;
+    --sidebar:            #FFFFFF;
+    --sidebar-foreground: #010136;
+    --sidebar-primary:    #0463EF;
+    --sidebar-primary-foreground:#FFFFFF;
+    --sidebar-accent:     #F0F0F0;
+    --sidebar-accent-foreground:#010136;
+    --sidebar-border:     #E8E8E8;
+    --sidebar-ring:       #0463EF;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

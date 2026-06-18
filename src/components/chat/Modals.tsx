@@ -1,6 +1,10 @@
 'use client'
 import { X, Send, Edit2, CheckCircle } from 'lucide-react'
 import { FormData } from '@/lib/types'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 // ─── PREVIEW MODAL ─────────────────────────────────────────────
 interface PreviewModalProps {
@@ -35,30 +39,21 @@ export function PreviewModal({ formData, formValues, onConfirm, onEdit, onClose 
   ]
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(1,1,54,0.55)', backdropFilter: 'blur(4px)', animation: 'fade-in 0.2s ease-out' }}
-    >
-      <div
-        className="bg-white rounded-3xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
-        style={{ boxShadow: '0 20px 60px rgba(1,1,54,0.25)', animation: 'slide-up 0.25s ease-out' }}
+    <Dialog open onOpenChange={open => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-lg max-h-[90vh] overflow-y-auto p-0 gap-0 rounded-3xl"
+        style={{ boxShadow: '0 20px 60px rgba(1,1,54,0.25)' }}
       >
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 py-4 sticky top-0 bg-white rounded-t-3xl z-10"
-          style={{ borderBottom: '1px solid #E0E0E0' }}
-        >
-          <h2 className="text-base font-bold" style={{ color: '#010136' }}>Preview ก่อนส่งกรม</h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-            style={{ color: '#999999' }}
-            onMouseOver={e => { e.currentTarget.style.background = '#F0F0F0'; e.currentTarget.style.color = '#010136' }}
-            onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999999' }}
-          >
+        <DialogHeader className="flex-row items-center justify-between px-6 py-4 sticky top-0 bg-white rounded-t-3xl z-10 border-b border-[#E0E0E0]">
+          <DialogTitle className="text-base font-bold" style={{ color: '#010136' }}>
+            Preview ก่อนส่งกรม
+          </DialogTitle>
+          <Button variant="ghost" size="icon-sm" onClick={onClose}>
             <X size={16} />
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
         {/* Ref badge */}
         <div className="px-6 pt-4 pb-2">
@@ -86,23 +81,18 @@ export function PreviewModal({ formData, formValues, onConfirm, onEdit, onClose 
           <PreviewTable title="เอกสารอ้างอิง"   rows={docRows} />
         </div>
 
-        {/* Action buttons */}
-        <div
-          className="flex gap-3 px-6 pb-6 pt-3 sticky bottom-0 bg-white"
-          style={{ borderTop: '1px solid #E0E0E0' }}
-        >
-          <button
+        {/* Footer */}
+        <DialogFooter showCloseButton={false} className="px-6 py-4 gap-3 border-t border-[#E0E0E0] bg-white rounded-b-3xl sm:flex-row">
+          <Button
+            variant="outline"
             onClick={onEdit}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: '#F0F0F0', color: '#666666', border: '1px solid #E0E0E0' }}
-            onMouseOver={e => { e.currentTarget.style.background = '#E0E0E0' }}
-            onMouseOut={e => { e.currentTarget.style.background = '#F0F0F0' }}
+            className="flex-1 gap-2 rounded-xl py-2.5 text-sm font-semibold"
           >
             <Edit2 size={13} /> แก้ไขข้อมูล
-          </button>
+          </Button>
           <button
             onClick={onConfirm}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
             style={{
               background: 'linear-gradient(135deg, #11BB7F, #16EA9E)',
               boxShadow: '0 4px 14px rgba(22,234,158,0.3)',
@@ -111,9 +101,9 @@ export function PreviewModal({ formData, formValues, onConfirm, onEdit, onClose 
           >
             <Send size={13} /> ยืนยันส่งข้อมูลเข้ากรม
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -154,10 +144,7 @@ function PreviewTable({ title, rows }: { title: string; rows: TableRow[] }) {
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr
-                key={i}
-                style={{ borderBottom: i < rows.length - 1 ? '1px solid #F0F0F0' : 'none' }}
-              >
+              <tr key={i} style={{ borderBottom: i < rows.length - 1 ? '1px solid #F0F0F0' : 'none' }}>
                 <td className="px-3 py-2 text-xs" style={{ color: '#666666' }}>{row.label}</td>
                 <td className="px-3 py-2 text-xs font-semibold" style={{ color: '#010136' }}>{row.value || '—'}</td>
                 <td className="px-3 py-2">{sourceTag(row.source)}</td>
@@ -179,15 +166,12 @@ interface ConfirmModalProps {
 
 export function ConfirmModal({ ref: refNo, onConfirm, onCancel }: ConfirmModalProps) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(1,1,54,0.55)', backdropFilter: 'blur(4px)', animation: 'fade-in 0.2s ease-out' }}
-    >
-      <div
-        className="bg-white rounded-3xl max-w-sm w-full mx-4 p-6 text-center"
-        style={{ boxShadow: '0 20px 60px rgba(1,1,54,0.25)', animation: 'slide-up 0.25s ease-out' }}
+    <Dialog open onOpenChange={open => !open && onCancel()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-sm rounded-3xl text-center p-6 gap-0"
+        style={{ boxShadow: '0 20px 60px rgba(1,1,54,0.25)' }}
       >
-        {/* Icon */}
         <div
           className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
           style={{ background: 'linear-gradient(135deg, #11BB7F, #16EA9E)', boxShadow: '0 4px 16px rgba(22,234,158,0.3)' }}
@@ -195,24 +179,22 @@ export function ConfirmModal({ ref: refNo, onConfirm, onCancel }: ConfirmModalPr
           <Send size={24} style={{ color: '#010136' }} />
         </div>
 
-        <h3 className="text-base font-bold mb-2" style={{ color: '#010136' }}>
+        <DialogTitle className="text-base font-bold mb-2" style={{ color: '#010136' }}>
           ยืนยันส่งข้อมูลเข้ากรม
-        </h3>
+        </DialogTitle>
         <p className="text-sm mb-6" style={{ color: '#666666', lineHeight: '1.6' }}>
           คุณแน่ใจหรือไม่ว่าต้องการส่งข้อมูลใบอนุญาต RGoods<br />
           สำหรับใบขน <strong style={{ color: '#010136' }}>{refNo}</strong> เข้ากรมฯ?
         </p>
 
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={onCancel}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: '#F0F0F0', color: '#666666', border: '1px solid #E0E0E0' }}
-            onMouseOver={e => { e.currentTarget.style.background = '#E0E0E0' }}
-            onMouseOut={e => { e.currentTarget.style.background = '#F0F0F0' }}
+            className="flex-1 gap-2 rounded-xl py-2.5 text-sm font-semibold"
           >
             <X size={14} /> ยกเลิก
-          </button>
+          </Button>
           <button
             onClick={onConfirm}
             className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
@@ -225,7 +207,7 @@ export function ConfirmModal({ ref: refNo, onConfirm, onCancel }: ConfirmModalPr
             <CheckCircle size={14} /> ยืนยันส่ง
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
