@@ -84,12 +84,11 @@ export function ChatInput({ onSend, onAttach, disabled }: ChatInputProps) {
         disabled={!text.trim() || disabled}
         className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         style={{
-          background: 'linear-gradient(135deg, #034DBA, #0463EF)',
+          background: '#0463EF',
           color: '#fff',
-          boxShadow: '0 4px 14px rgba(4,99,239,0.3)',
         }}
-        onMouseOver={e => { if (!disabled) e.currentTarget.style.boxShadow = '0 6px 18px rgba(4,99,239,0.4)' }}
-        onMouseOut={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(4,99,239,0.3)' }}
+        onMouseOver={e => { if (!disabled) e.currentTarget.style.opacity = '0.88' }}
+        onMouseOut={e => { e.currentTarget.style.opacity = '1' }}
       >
         <Send size={16} />
       </button>

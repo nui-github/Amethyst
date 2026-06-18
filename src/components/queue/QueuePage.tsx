@@ -60,9 +60,7 @@ function DashboardStrip({
         </div>
         <button
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
-          style={{ background: 'linear-gradient(135deg, #034DBA, #0463EF)', color: '#fff', boxShadow: '0 4px 14px rgba(4,99,239,0.3)' }}
-          onMouseOver={e => { e.currentTarget.style.boxShadow = '0 6px 18px rgba(4,99,239,0.4)' }}
-          onMouseOut={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(4,99,239,0.3)' }}
+          style={{ background: '#0463EF', color: '#fff' }}
         >
           <Plus size={14} />
           เพิ่มรายการ
@@ -440,7 +438,7 @@ function ShipmentChatView({
           </button>
           <button onClick={handleConfirm}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white"
-            style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
+            style={{ background: '#0463EF' }}>
             <CheckCircle2 size={13} /> ยืนยันและดำเนินการต่อ
           </button>
         </div>
@@ -449,7 +447,7 @@ function ShipmentChatView({
         <div className="flex-shrink-0 px-4 py-3" style={{ borderTop: '1px solid #E5E7EB', background: '#fff' }}>
           <button onClick={handleSendEmail}
             className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white"
-            style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
+            style={{ background: '#0463EF' }}>
             <Send size={13} /> ส่งอีเมลหาลูกค้า
           </button>
         </div>
@@ -463,7 +461,7 @@ function ShipmentChatView({
           </button>
           <button onClick={handleCustomerConfirmed}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white"
-            style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
+            style={{ background: '#0463EF' }}>
             <CheckCircle2 size={13} /> ลูกค้ายืนยันเอกสารแล้ว
           </button>
         </div>
@@ -499,7 +497,7 @@ function ShipmentChatView({
           onClick={() => { if (input.trim()) sendUserMessage(input.trim()) }}
           disabled={!input.trim()}
           className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-all hover:scale-105 active:scale-95"
-          style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)', color: '#fff' }}>
+          style={{ background: '#0463EF', color: '#fff' }}>
           <Send size={13} />
         </button>
       </div>
@@ -540,7 +538,7 @@ function ShipmentChatView({
               </button>
               <button onClick={handleSubmit}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg,#11BB7F,#16EA9E)' }}>
+                style={{ background: '#0463EF' }}>
                 <CheckCircle2 size={14} /> ยื่นกรม
               </button>
             </div>

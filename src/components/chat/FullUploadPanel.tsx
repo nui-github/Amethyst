@@ -135,8 +135,7 @@ export function FullUploadPanel({ onStartOCR }: FullUploadPanelProps) {
           disabled={totalFiles === 0}
           className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
           style={{
-            background: totalFiles > 0 ? 'linear-gradient(135deg, #034DBA, #0463EF)' : '#CCCCCC',
-            boxShadow: totalFiles > 0 ? '0 4px 14px rgba(4,99,239,0.28)' : 'none',
+            background: totalFiles > 0 ? '#0463EF' : '#CCCCCC',
             cursor: totalFiles > 0 ? 'pointer' : 'not-allowed',
           }}
         >

@@ -30,7 +30,9 @@ const C = {
   n600:      '#666666',
 }
 
-const btnPrimary  = `display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:linear-gradient(135deg,${C.blueDeep},${C.blue});color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(4,99,239,0.28);transition:all .15s`
+const btnPrimary  = `display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:${C.blue};color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .15s`
+const btnOutline  = `display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:transparent;color:${C.blue};font-size:12px;font-weight:700;border:1.5px solid ${C.blue};cursor:pointer;transition:all .15s`
+const btnGhost    = `display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:transparent;color:${C.blue};font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s`
 const btnSecondary= `display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:${C.n100};color:${C.n600};font-size:12px;font-weight:600;border:1px solid ${C.n200};cursor:pointer;transition:all .15s`
 const chipStyle   = `padding:5px 11px;border-radius:20px;border:1px solid rgba(4,99,239,0.25);background:rgba(4,99,239,0.08);color:${C.blue};font-size:11px;font-weight:600;cursor:pointer;transition:all .15s`
 const cardWrap    = `border-radius:14px;border:1px solid ${C.n200};overflow:hidden;box-shadow:0 2px 10px rgba(1,1,54,0.06);margin-top:10px`
@@ -174,7 +176,7 @@ export default function Home() {
         <p style="font-size:13px;font-weight:700;color:${C.tealDark};margin:0">คลิกหรือลากไฟล์ Invoice มาวาง</p>
         <p style="font-size:11px;color:${C.n500};margin:4px 0 0">PDF, JPG, PNG, Excel — สูงสุด 20MB</p>
       </div>
-      <button onclick="window.__chat?.processInvoiceFirst()" style="${btnPrimary};background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy};margin-top:10px;width:100%;justify-content:center;display:flex">
+      <button onclick="window.__chat?.processInvoiceFirst()" style="${btnPrimary};margin-top:10px;width:100%;justify-content:center;display:flex">
         ${icSearch(C.navy, 13)} OCR และวิเคราะห์ Invoice
       </button>`)
   }, [botMsg])
@@ -335,8 +337,8 @@ export default function Home() {
                 </div>
                 <div id="${id}_btn" style="flex-shrink:0">
                   <button onclick="window.__chat?.confirmFlag('${id}',${total})"
-                    style="${btnPrimary};padding:5px 12px;font-size:11px;background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy}">
-                    ${icCheck(C.navy,11)} ยืนยัน
+                    style="${btnPrimary};padding:5px 12px;font-size:11px">
+                    ${icCheck('#fff',11)} ยืนยัน
                   </button>
                 </div>
               </div>
@@ -428,8 +430,8 @@ export default function Home() {
           <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary};flex:1;justify-content:center;display:flex">
             ${icX(C.n600, 13)} แก้ไขข้อมูล
           </button>
-          <button onclick="window.__chat?.confirmSubmitFromChat()" style="${btnPrimary};flex:2;justify-content:center;display:flex;background:linear-gradient(135deg,${C.tealMid},${C.teal});color:${C.navy}">
-            ${icCheck(C.navy, 14)} ยืนยันส่งกรม
+          <button onclick="window.__chat?.confirmSubmitFromChat()" style="${btnPrimary};flex:2;justify-content:center;display:flex">
+            ${icCheck('#fff', 14)} ยืนยันส่งกรม
           </button>
         </div>
       </div>`)
@@ -811,7 +813,7 @@ export default function Home() {
         <p style="font-size:11px;color:${C.n500};margin-top:3px">รองรับ PDF, JPG, PNG, Excel</p>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button onclick="window.__chat?.processInvoice()" style="${btnPrimary};background:linear-gradient(135deg,${C.tealDark},${C.tealMid});display:inline-flex;align-items:center;gap:5px">${icSearch(C.teal,13)} OCR และวิเคราะห์ Invoice</button>
+        <button onclick="window.__chat?.processInvoice()" style="${btnPrimary}">${icSearch('#fff',13)} OCR และวิเคราะห์ Invoice</button>
         <button onclick="window.__chat?.spnNotFoundBack()" style="${btnSecondary}">← ย้อนกลับ</button>
       </div>`)
   }, [botMsg])
