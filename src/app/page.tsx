@@ -100,9 +100,10 @@ export default function Home() {
   const [showPreview, setShowPreview]     = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [currentRef, setCurrentRef]       = useState('')
-  const [isConnected, setIsConnected]     = useState(false)
-  const [pendingRef, setPendingRef]        = useState('')
+  const [isConnected, setIsConnected]       = useState(false)
+  const [pendingRef, setPendingRef]          = useState('')
   const [confirmedFlagIds, setConfirmedFlagIds] = useState<string[]>([])
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])
@@ -1092,32 +1093,44 @@ export default function Home() {
     }, 2200)
   }, [formData, userMsg, botMsg])
 
+  const headerProps = {
+    isConnected,
+    onDisconnect: () => {
+      setIsConnected(false)
+      withTyping(() => botMsg(`<div style="display:flex;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2)">
+        ${icX('#DC2626',15)}
+        <span style="font-size:12px;color:#991B1B;font-weight:600">ตัดการเชื่อมต่อ ShippingNet เรียบร้อยแล้ว</span>
+      </div>`), 300)
+    },
+    onConnectClick: showConnectPrompt,
+    sidebarCollapsed,
+    onToggleSidebar: () => setSidebarCollapsed(v => !v),
+    currentPage: sidebarActive,
+  }
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#F2F2F2' }}>
-      <ChatHeader
-        isConnected={isConnected}
-        onDisconnect={() => {
-          setIsConnected(false)
-          withTyping(() => botMsg(`<div style="display:flex;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2)">
-            ${icX('#DC2626',15)}
-            <span style="font-size:12px;color:#991B1B;font-weight:600">ตัดการเชื่อมต่อ ShippingNet เรียบร้อยแล้ว</span>
-          </div>`), 300)
-        }}
-        onConnectClick={showConnectPrompt}
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F2F2F2' }}>
+      <Sidebar
+        activeItem={sidebarActive}
+        onSelect={(id) => { setSidebarActive(id); if (id !== 'queue') setQueueOpenId(null) }}
+        needsYouCount={queue.filter((s: any) => s.isNew === true).length}
+        collapsed={sidebarCollapsed}
       />
-      <div className="flex flex-1 overflow-hidden">
-      <Sidebar activeItem={sidebarActive} onSelect={(id) => { setSidebarActive(id); if (id !== 'queue') setQueueOpenId(null) }} needsYouCount={0} />
       {sidebarActive === 'queue' ? (
-        <div className="flex-1 overflow-hidden">
-          <QueuePage
-            queue={queue}
-            updateShipment={updateShipment}
-            initialActiveId={queueOpenId}
-            onNavigateChat={() => { setSidebarActive('chatbot'); setQueueOpenId(null) }}
-          />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ChatHeader {...headerProps} />
+          <div className="flex-1 overflow-hidden">
+            <QueuePage
+              queue={queue}
+              updateShipment={updateShipment}
+              initialActiveId={queueOpenId}
+              onNavigateChat={() => { setSidebarActive('chatbot'); setQueueOpenId(null) }}
+            />
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
+          <ChatHeader {...headerProps} />
           <ChatArea
             messages={messages} isTyping={isTyping}
             ocrProgress={ocrProgress} ocrStages={ocrStages}
@@ -1139,7 +1152,6 @@ export default function Home() {
           <ChatInput onSend={handleSend} disabled={isTyping} />
         </div>
       )}
-      </div>
 
       {showPreview && (
         <PreviewModal
