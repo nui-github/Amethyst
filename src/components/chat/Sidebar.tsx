@@ -156,7 +156,7 @@ function CollapsedRail({
       {tip && <Tooltip label={tip.label} anchorY={tooltip!.y} />}
 
       {/* Logo icon */}
-      <div className="flex items-center justify-center py-3.5 flex-shrink-0"
+      <div className="flex items-center justify-center h-12 flex-shrink-0"
         style={{ borderBottom: `1px solid ${L.border}` }}>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center"
           style={{ background: 'linear-gradient(135deg, #010136, #0463EF)' }}>

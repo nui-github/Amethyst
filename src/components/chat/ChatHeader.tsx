@@ -49,7 +49,7 @@ export function ChatHeader({
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span className="text-[13px] font-medium truncate" style={{ color: '#888888' }}>ShippingNet Assistant</span>
+        <span className="text-[13px] font-medium truncate" style={{ color: '#888888' }}>Netbay Agent</span>
         <ChevronRight size={12} style={{ color: '#CCCCCC', flexShrink: 0 }} />
         <span className="text-[13px] font-semibold truncate" style={{ color: '#111111' }}>{pageLabel}</span>
       </div>

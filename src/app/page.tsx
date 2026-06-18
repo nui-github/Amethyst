@@ -142,23 +142,7 @@ export default function Home() {
         <div style="display:flex;flex-direction:column;gap:8px">
           ${docCard('window.__chat?.chooseCustomsDocs()', icFile(C.blue, 17), 'ใบขนสินค้า', 'อัปโหลดใบขนฯ + เอกสารประกอบ — AI OCR ดึงข้อมูลทั้งหมด', C.blue)}
           ${docCard('window.__chat?.chooseInvoiceFirst()', icList(C.tealDark, 17), 'ใบ Invoice', 'เริ่มจาก Invoice — AI วิเคราะห์แล้วแจ้งว่าขาดข้อมูลอะไรเพิ่ม', C.tealDark)}
-          <div style="padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="width:38px;height:38px;border-radius:10px;background:${C.n100};display:flex;align-items:center;justify-content:center;flex-shrink:0">${icFolder(C.n500, 17)}</div>
-              <div>
-                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">เอกสารอื่นๆ</p>
-                <p style="font-size:11px;color:${C.n500};margin:2px 0 0">ระบุชื่อเอกสารที่มี</p>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px">
-              <input id="otherDocInput" type="text" placeholder="เช่น COA, GMP Certificate, Packing List…"
-                style="flex:1;border:1px solid ${C.n200};border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;color:${C.navy};background:#fff"
-                onfocus="this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.12)'"
-                onblur="this.style.borderColor='${C.n200}';this.style.boxShadow='none'"
-                onkeydown="if(event.key==='Enter')window.__chat?.sendOtherDoc()"/>
-              <button onclick="window.__chat?.sendOtherDoc()" style="${btnPrimary};padding:7px 14px">→</button>
-            </div>
-          </div>
+          ${docCard('window.__chat?.chooseDocs()', icFolderOpen(C.blue, 17), 'เอกสารชุดสำหรับการขอใบอนุญาตนำเข้า', 'อัปโหลดเอกสารที่มีทั้งหมด — AI OCR ดึงข้อมูล แจ้งสิ่งที่ขาด และช่วยกรอกจนครบ', C.blue)}
         </div>`)
     }, 400)
   }, [userMsg, botMsg, withTyping])
@@ -324,7 +308,8 @@ export default function Home() {
 
         // Step 3: Flags — individual confirm per flag
         withTyping(() => {
-          const flagCard = (id: string, num: number, total: number, title: string, body: string, extra = '') =>
+          setConfirmedFlagIds([])
+          const flagCard = (id: string, num: number, _total: number, title: string, body: string, extra = '') =>
             `<div id="${id}" style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1.5px solid #FDE68A;margin-bottom:8px;transition:all .3s">
               <div style="display:flex;align-items:flex-start;gap:10px">
                 <div style="flex:1">
@@ -336,7 +321,7 @@ export default function Home() {
                   ${extra}
                 </div>
                 <div id="${id}_btn" style="flex-shrink:0">
-                  <button onclick="window.__chat?.confirmFlag('${id}',${total})"
+                  <button onclick="window.__chat?.confirmFlag('${id}')"
                     style="${btnPrimary};padding:5px 12px;font-size:11px">
                     ${icCheck('#fff',11)} ยืนยัน
                   </button>
@@ -362,9 +347,14 @@ export default function Home() {
                 style="margin-top:8px;width:100%;border:1px solid #FDE68A;border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;background:#FFFEF0;color:#92400E;outline:none;box-sizing:border-box"
                 onfocus="this.style.borderColor='${C.tealMid}'" onblur="this.style.borderColor='#FDE68A'"/>`
             )}
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E0E0E0">
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E0E0E0;display:flex;align-items:center;gap:8px">
               <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
                 ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
+              </button>
+              <button id="flags_next_btn" data-total="2" onclick="window.__chat?.proceedAfterFlags()"
+                disabled
+                style="${btnPrimary};opacity:0.35;cursor:not-allowed;margin-left:auto">
+                ถัดไป →
               </button>
             </div>
           </div>`)
@@ -445,11 +435,28 @@ export default function Home() {
       botMsg(`<div style="${cardWrap}">
         <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.blue,13)} ร่างอีเมลถึงลูกค้า</div>
         <div style="${cardBody}">
-          <div style="${rowStyle}"><span style="color:${C.n600}">ถึง</span><span style="font-weight:600;color:${C.navy}">คุณสมหญิง วัฒนกุล &lt;somying@healthpharma.co.th&gt;</span></div>
-          <div style="${rowStyle}"><span style="color:${C.n600}">หัวข้อ</span><span style="font-weight:600;color:${C.navy};font-size:11px">ขอยืนยันข้อมูลใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)</span></div>
+          <div style="display:grid;grid-template-columns:52px 1fr;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed ${C.n200}">
+            <span style="font-size:12px;color:${C.n600}">ถึง</span>
+            <input id="email_to" type="text" placeholder="อีเมลผู้รับ เช่น name@company.com"
+              style="width:100%;box-sizing:border-box;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;color:${C.navy};background:transparent;outline:none"
+              oninput="window.__chat?.checkEmailReady()"
+              onfocus="this.style.background='#fff';this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
+              onblur="this.style.background='transparent';this.style.borderColor='transparent';this.style.boxShadow='none'"/>
+          </div>
+          <div style="display:grid;grid-template-columns:52px 1fr;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed ${C.n200}">
+            <span style="font-size:12px;color:${C.n600}">หัวข้อ</span>
+            <input id="email_subject" type="text" value="ขอยืนยันข้อมูลใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)"
+              style="width:100%;box-sizing:border-box;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;color:${C.navy};background:transparent;outline:none"
+              oninput="window.__chat?.checkEmailReady()"
+              onfocus="this.style.background='#fff';this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
+              onblur="this.style.background='transparent';this.style.borderColor='transparent';this.style.boxShadow='none'"/>
+          </div>
           <div style="padding-top:10px">
             <p style="font-size:10px;font-weight:600;text-transform:uppercase;color:${C.n500};margin:0 0 6px">เนื้อหา</p>
-            <div style="padding:10px;background:${C.n50};border:1px solid ${C.n200};border-radius:8px;font-size:11px;color:${C.n600};line-height:1.7;white-space:pre-wrap">เรียน คุณสมหญิง วัฒนกุล
+            <textarea id="email_body" rows="10" style="width:100%;box-sizing:border-box;padding:10px;background:#fff;border:1px solid ${C.n200};border-radius:8px;font-size:11px;color:${C.n600};line-height:1.7;font-family:inherit;resize:vertical;outline:none;overflow-y:auto"
+              oninput="window.__chat?.checkEmailReady()"
+              onfocus="this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
+              onblur="this.style.borderColor='${C.n200}';this.style.boxShadow='none'">เรียน คุณสมหญิง วัฒนกุล
 
 ตามที่บริษัทได้นำเข้าวัตถุดิบยา Amoxicillin Trihydrate ตามใบขนสินค้าเลขที่ A012-25680617-00891 นั้น
 
@@ -458,13 +465,14 @@ export default function Home() {
 หากข้อมูลถูกต้องครบถ้วน กรุณาตอบกลับอีเมลนี้เพื่อยืนยัน
 
 ขอแสดงความนับถือ
-ฝ่ายพิธีการ ShippingNet</div>
+ฝ่ายพิธีการ ShippingNet</textarea>
           </div>
         </div>
       </div>
       <div style="margin-top:10px">
-        <button onclick="window.__chat?.customerConfirmedInChat()" style="${btnPrimary};width:100%;justify-content:center">
-          ${icCheck('#fff',13)} ลูกค้ายืนยันเอกสารแล้ว
+        <button id="send_email_btn" onclick="window.__chat?.customerConfirmedInChat()" disabled
+          style="${btnPrimary};width:100%;justify-content:center;opacity:0.35;cursor:not-allowed">
+          ${icCheck('#fff',13)} ส่งอีเมล
         </button>
       </div>`)
     }, 600)
@@ -483,37 +491,24 @@ export default function Home() {
       chooseCustomsDocs:      () => {
         userMsg('ใบขนสินค้า')
         withTyping(() => {
-          const sub = (onclick: string, iconHtml: string, title: string, desc: string, accent = C.blue) =>
-            `<div onclick="${onclick}"
-              style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s"
-              onmouseover="this.style.borderColor='${accent}';this.style.background='${accent}0D'"
-              onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
-              <div style="width:36px;height:36px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconHtml}</div>
-              <div style="flex:1;min-width:0">
-                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
-                <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
-              </div>
-              <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
-            </div>`
-          botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 12px">เลือกวิธีอัปโหลดใบขนสินค้า:</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              ${sub('window.__chat?.chooseFullUpload()', icUpload(C.blue, 16), 'อัปโหลดไฟล์เอกสาร', 'Invoice, ใบขนสินค้า, COA, ใบเลข U — รองรับ PDF, JPG, PNG และ XML', C.blue)}
-              ${sub('window.__chat?.chooseRGoods()', icShip(C.tealDark, 16), 'สร้างด้วยระบบ RGoods (ShippingNet)', 'ดึงข้อมูลจาก ShippingNet โดยตรง ไม่ต้องอัปโหลด', C.tealDark)}
-            </div>`)
+          setStep('invoice_upload')
+          botMsg(`<p style="font-size:13px;font-weight:600;color:${C.blue};margin:0 0 8px;display:flex;align-items:center;gap:6px">${icFile(C.blue, 15)} อัปโหลดใบขนสินค้า</p>
+            <p style="font-size:12px;color:${C.n600};margin:0 0 12px;line-height:1.6">AI จะ OCR ใบขนฯ → แสดงข้อมูลที่ได้ → แจ้งข้อมูลที่ยังขาด → ช่วยกรอกจนครบก่อนร่างใบอนุญาต</p>
+            <div onclick="window.__chat?.processInvoiceFirst()"
+              style="border:2px dashed rgba(4,99,239,0.3);border-radius:14px;padding:24px;text-align:center;background:rgba(4,99,239,0.04);cursor:pointer;transition:all .2s"
+              onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.08)'"
+              onmouseout="this.style.borderColor='rgba(4,99,239,0.3)';this.style.background='rgba(4,99,239,0.04)'">
+              <div style="display:flex;justify-content:center;margin-bottom:10px">${icUpload(C.blue, 36)}</div>
+              <p style="font-size:13px;font-weight:700;color:${C.blue};margin:0">คลิกหรือลากไฟล์ใบขนสินค้ามาวาง</p>
+              <p style="font-size:11px;color:${C.n500};margin:4px 0 0">รองรับ: PDF, JPG, PNG, XML — สูงสุด 20MB</p>
+            </div>
+            <button onclick="window.__chat?.processInvoiceFirst()" style="${btnPrimary};margin-top:10px;width:100%;justify-content:center;display:flex">
+              ${icSearch('#fff', 13)} OCR และวิเคราะห์ใบขนสินค้า
+            </button>`)
         }, 400)
       },
       chooseDocs:             () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       chooseInvoiceFirst:     () => withTyping(() => showInvoiceFirstUpload(), 300),
-      sendOtherDoc:           () => {
-        const input = document.getElementById('otherDocInput') as HTMLInputElement
-        const val = input?.value?.trim()
-        if (!val) return
-        userMsg(`มีเอกสาร: ${val}`)
-        withTyping(() => {
-          botMsg(`<p style="font-size:13px;color:${C.n600}">รับทราบแล้วครับ ขอให้อัปโหลด <strong style="color:${C.navy}">${val}</strong> เข้ามาเพื่อ OCR ดึงข้อมูล:</p>`)
-          setTimeout(() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }, 300)
-        }, 400)
-      },
       processInvoiceFirst:    () => processInvoiceFirstOCR(),
       uploadMoreDocs:         () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       fillMissingManually:    () => showMissingFieldsForm(),
@@ -554,17 +549,42 @@ export default function Home() {
       goToQueue:              (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
       showImportLicenseMenu:  () => showImportLicenseMenu(),
       showPreviewInChat:      () => showPreviewInChat(),
-      confirmFlag:            (id: string, total: number) => {
-        setConfirmedFlagIds(prev => {
-          const next = prev.includes(id) ? prev : [...prev, id]
-          if (next.length >= total) {
-            setTimeout(() => {
-              userMsg('ยืนยันทุกจุดแล้ว')
-              setTimeout(() => showEmailDraftInChat(), 800)
-            }, 100)
-          }
-          return next
-        })
+      showEmailDraftInChat:   () => showEmailDraftInChat(),
+      checkEmailReady:        () => {
+        const to   = (document.getElementById('email_to')      as HTMLInputElement  | null)?.value?.trim()
+        const subj = (document.getElementById('email_subject')  as HTMLInputElement  | null)?.value?.trim()
+        const body = (document.getElementById('email_body')     as HTMLTextAreaElement | null)?.value?.trim()
+        const btn  =  document.getElementById('send_email_btn') as HTMLButtonElement  | null
+        if (!btn) return
+        const ready = !!(to && subj && body)
+        btn.disabled = !ready
+        btn.style.opacity = ready ? '1' : '0.35'
+        btn.style.cursor  = ready ? 'pointer' : 'not-allowed'
+      },
+      confirmFlag:            (id: string) => {
+        setConfirmedFlagIds(prev => prev.includes(id) ? prev : [...prev, id])
+      },
+      proceedAfterFlags:      () => {
+        userMsg('ยืนยันทุกจุดแล้ว')
+        withTyping(() => {
+          const choiceCard = (onclick: string, icon: string, title: string, desc: string, accent: string) =>
+            `<div onclick="${onclick}"
+              style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s"
+              onmouseover="this.style.borderColor='${accent}';this.style.background='${accent}14'"
+              onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+              <div style="width:36px;height:36px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${icon}</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
+                <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
+              </div>
+              <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
+            </div>`
+          botMsg(`<p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 12px">ต้องการดำเนินการต่ออย่างไรครับ?</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${choiceCard('window.__chat?.showEmailDraftInChat()', icList(C.blue, 17), 'ต้องการส่งอีเมล', 'ร่างอีเมลถึงลูกค้าเพื่อยืนยันเอกสารก่อนยื่นกรม', C.blue)}
+              ${choiceCard('window.__chat?.showPreviewInChat()', icFile(C.tealDark, 17), 'ตรวจสอบข้อมูลก่อนส่งกรม', 'ดูสรุปข้อมูลทั้งหมดและยื่นเอกสารต่อกรมโดยตรง', C.tealDark)}
+            </div>`)
+        }, 600)
       },
       selectQty:              (val: string) => {
         const qtyBtns = document.querySelectorAll('#flag_qty button[onclick*="selectQty"]')

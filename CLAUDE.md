@@ -161,35 +161,44 @@ For inline flex alignment, wrap the element: `style="display:inline-flex;align-i
 handleSend(text)
   ├─ "สร้าง rgoods" (no ref) → !isConnected → ConnectPanel → showSPNListInChat()
   │     └─ SPNListPanel: select refs → onRequestPermit(refs) → addToQueueFromChat(refs)
-  │           └─ addToQueueFromChat: creates Shipment(needs_you, isNew:true), shows success + "ไปหน้าคิวงาน" btn
   ├─ HTHM ref + "สร้าง/rgoods"
   │     ├─ !isConnected → setPendingRef(ref) → show_connect → ConnectPanel
-  │     │     └─ onConnect() → showConnectOptions(ref) → 2 choice cards
-  │     │           ├─ "ดูสถานะ" → showStatus()
-  │     │           └─ "สร้างใหม่" → fetchSPN(ref)
   │     └─ isConnected → fetchSPN(ref)
-  │           ├─ ref in KNOWN_REFS → SPN card + step:'upload'          [Flow ปกติ]
-  │           └─ not found         → spnNotFound() + step:'not_found'  [Flow broker]
-  │                 ├─ chooseXML()       → showXMLUpload() + step:'xml_upload'
-  │                 │     └─ processXML() → xmlDone() + step:'preview_ready'
-  │                 ├─ chooseInvoice()   → showInvoiceUpload() + step:'invoice_upload'
-  │                 │     └─ processInvoice() → showHsAnalysis() + step:'hs_analysis'
-  │                 │           └─ proceedFromInvoice() → showFormFromInvoice() + step:'form'
-  │                 └─ chooseFullUpload() → step:'full_upload' → OCR → form
-  ├─ "อัปโหลด/upload"   → showUpload() + step:'upload'
-  ├─ "ตรวจสอบสถานะ"    → showStatus()
-  └─ unknown             → fallback + chips
+  │           ├─ ref in KNOWN_REFS → SPN card + step:'upload'
+  │           └─ not found → spnNotFound() → showImportLicenseMenu()
+  └─ unknown → fallback + chips
 
-startOCR() → 4-stage animation (700ms each) → showForm() → step:'form'
-handlePreview() → validate importDate + drugRegNo → PreviewModal
-handleConfirmSubmit() → ConfirmModal → handleSubmit() → success → step:'done'
+showImportLicenseMenu() → 3 cards:
+  ├─ "ใบขนสินค้า"          → chooseCustomsDocs() → single upload box (PDF/JPG/PNG/XML)
+  │                               → processInvoiceFirst() → OCR → showOCRResultsInChat()
+  │                               → flags (individual confirm) → proceedAfterFlags()
+  │                               → 2 choices: "ต้องการส่งอีเมล" | "ตรวจสอบข้อมูลก่อนส่งกรม"
+  │                                     ├─ showEmailDraftInChat() → editable To/Subject/Body
+  │                                     │     → ส่งอีเมล (enable เมื่อ To+Subject+Body ครบ)
+  │                                     │     → customerConfirmedInChat() → showPreviewInChat()
+  │                                     └─ showPreviewInChat() → ยืนยันส่งกรม → step:'done'
+  ├─ "ใบ Invoice"           → chooseInvoiceFirst() → showInvoiceFirstUpload()
+  │                               → processInvoiceFirst() → OCR → showOCRResultsInChat()
+  └─ "เอกสารชุดสำหรับการขอใบอนุญาตนำเข้า" → chooseDocs() → show_full_upload (FullUploadPanel)
+                                  → onFullUploadOCR() → OCR → showForm()
+
+Flag confirm flow:
+  - setConfirmedFlagIds([]) on new flags message (reset state)
+  - each flag has own "ยืนยัน" button → confirmFlag(id)
+  - "ถัดไป →" button (id=flags_next_btn, data-total=N) disabled until all N flags confirmed
+  - applyConfirmedFlags() in ChatArea re-applies DOM state on every render
+
+Email draft (showEmailDraftInChat):
+  - "ถึง" field: placeholder only (user fills email)
+  - "หัวข้อ" field: AI pre-filled, user can edit
+  - "เนื้อหา": AI pre-filled textarea, scrollable, user can edit
+  - "ส่งอีเมล" button: disabled until To+Subject+Body all non-empty (checkEmailReady)
 ```
 
 ### ChatStep states
 `idle` → `upload` / `not_found` → `ocr` → `form` → `preview` → `done`
-`full_upload` = not_found path with multi-slot upload
-`xml_upload` → `preview_ready` = not_found XML path (all fields pre-filled)
-`invoice_upload` → `hs_analysis` = not_found Invoice path (HS Code analysis)
+`full_upload` = multi-slot FullUploadPanel upload
+`invoice_upload` = invoice-first single upload path
 
 ### ShippingNet Connect Flow
 - State: `isConnected: boolean`, `pendingRef: string` in `page.tsx`

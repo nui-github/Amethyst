@@ -10,6 +10,14 @@ function applyConfirmedFlags(ids: string[]) {
     const btn = document.getElementById(id + '_btn')
     if (btn && !btn.innerHTML.includes('ยืนยันแล้ว')) btn.innerHTML = CONFIRMED_BTN_HTML
   }
+  const nextBtn = document.getElementById('flags_next_btn') as HTMLButtonElement | null
+  if (nextBtn) {
+    const total = parseInt(nextBtn.dataset.total || '0', 10)
+    const allDone = ids.length >= total
+    nextBtn.disabled = !allDone
+    nextBtn.style.opacity = allDone ? '1' : '0.35'
+    nextBtn.style.cursor = allDone ? 'pointer' : 'not-allowed'
+  }
 }
 import { ChatMessage, UploadSlots, SPNEntry } from '@/lib/types'
 import { TypingIndicator }   from './TypingIndicator'
@@ -137,7 +145,7 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
             className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.28)' }}
           >AI</div>
-          <span className="text-[11px] font-semibold" style={{ color: '#8080A5' }}>ShippingNet Assistant</span>
+          <span className="text-[11px] font-semibold" style={{ color: '#8080A5' }}>Netbay Agent</span>
         </div>
         <div
           className="rounded-2xl px-5 py-4 leading-relaxed w-full"
