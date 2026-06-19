@@ -18,34 +18,15 @@ Built with Next.js 14 App Router + TypeScript + Tailwind CSS + Lucide React.
 
 ---
 
-## BizX Design System (CRITICAL — always follow)
+## BizX Design System
 
-### Color tokens (use these hex values directly in inline styles)
-```
-Navy (Primary):   #010136 (bg), #40406A (mid), #8080A5 (muted text)
-Blue (Action):    #0463EF (active/CTA), #034DBA (gradient start), #B0D0FF (light)
-Teal (Success):   #16EA9E (accent), #11BB7F (mid), #0D8F61 (text on light)
-Neutral:          #F2F2F2 (app bg), #F9F9F9 (card lightest), #E0E0E0 (borders)
-                  #CCCCCC (dashed), #999999 (muted), #666666 (labels), #333333 (dark)
-```
+> Full design reference (colors, typography, components, gradients, shadows, Do/Don't rules) is in **[DESIGN.md](./DESIGN.md)**.
 
-### Gradients
-```
-Primary btn:  linear-gradient(135deg, #034DBA, #0463EF)
-Teal btn:     linear-gradient(135deg, #11BB7F, #16EA9E)
-AI avatar:    linear-gradient(90deg, #0463EF, #16EA9E)   ← matches OCR progress bar
-Sidebar logo: linear-gradient(90deg, #0463EF, #16EA9E)   ← same gradient
-Profile icon: #0463EF solid (primary blue)
-BX badge:     linear-gradient(135deg, #0463EF, #16EA9E)
-User avatar:  linear-gradient(135deg, #40406A, #0463EF)
-```
-
-### Color constant `C` in page.tsx
-All inline HTML bot messages use the `C` object at the top of `page.tsx`:
-```ts
-const C = { navy, blue, blueDeep, teal, tealMid, tealDark, n50, n100, n200, n300, n500, n600 }
-```
-Always use `${C.blue}` etc. when writing new inline HTML bot messages.
+Key things to know here:
+- All brand colors as inline `style={}` hex — never Tailwind color classes
+- `C` object at top of `page.tsx` — use `${C.blue}` etc. in all bot HTML string templates
+- Raw `<button>` with inline gradient for CTAs — not shadcn Button
+- No emoji in bot messages — use SVG helpers (`icCheck`, `icX`, etc.)
 
 ---
 
@@ -142,27 +123,9 @@ src/
 ## Inline SVG Icon Helpers (page.tsx)
 
 Bot messages use `dangerouslySetInnerHTML` — Lucide React components cannot be used inside them.
-Instead, use these helper functions defined at module level in `page.tsx`:
+Use `icCheck`, `icX`, `icWarn`, `icFile`, `icList`, `icPlus`, `icFolder`, `icFolderOpen`, `icSearch`, `icShip`, `icUpload` helpers defined at module level in `page.tsx`.
 
-```ts
-const ic = (path: string, size = 16, color = 'currentColor') => `<svg ...>${path}</svg>`
-const icCheck      = (c='#0D8F61', s=16) => ic('<path d="M20 6 9 17l-5-5"/>', s, c)
-const icX          = (c='#C0392B', s=16) => ic('<path d="M18 6 6 18M6 6l12 12"/>', s, c)
-const icWarn       = (c='#B45309', s=16) => ic('...triangle...', s, c)
-const icFile       = (c='#1565C0', s=16) => ic('...file...', s, c)
-const icList       = (c='#0463EF', s=16) => ic('...list...', s, c)
-const icPlus       = (c='#0D8F61', s=16) => ic('...plus...', s, c)
-const icFolder     = (c='#B45309', s=16) => ic('...folder...', s, c)
-const icFolderOpen = (c='#0463EF', s=32) => ic('...folder...', s, c)
-const icSearch     = (c='#0463EF', s=16) => ic('...search...', s, c)
-const icShip       = (c='#0D8F61', s=18) => ic('...ship...', s, c)
-const icUpload     = (c='#0463EF', s=32) => ic('...upload...', s, c)
-```
-
-Use these in template literals: `${icCheck(C.tealDark, 15)}` etc.
-For inline flex alignment, wrap the element: `style="display:inline-flex;align-items:center;gap:5px"`.
-
-**Never use emoji (🚢 📂 ✅ ❌ ⚠️ etc.) in bot messages** — use SVG helpers instead.
+Full signatures and usage in **[DESIGN.md → Inline SVG Icon Helpers](./DESIGN.md)**.
 
 ---
 
@@ -453,24 +416,27 @@ npm run lint   # ESLint
 ---
 
 ## Coding Rules (ALWAYS follow)
-1. **BizX colors only** — never use Tailwind color classes (text-blue-500 etc.) for brand colors; always use inline `style={{ color: '#0463EF' }}` or the `C.*` constants in page.tsx
-2. **IBM Plex Sans Thai** — font is loaded via `<link>` in layout.tsx, not next/font
-3. **New bot HTML messages** — use template literals with `C.*` constants and `btnPrimary`, `chipStyle` etc. helper strings defined at top of page.tsx
-4. **No emoji in bot messages** — use inline SVG helpers (`icCheck`, `icX`, `icWarn`, `icFile`, etc.) defined at module level in page.tsx
-5. **New chat commands** — add to `handleSend()` in page.tsx before the fallback branch
-6. **New sidebar items** — add to `mainItems` array in Sidebar.tsx
-7. **New special message types** — add content key + React component branch in ChatArea.tsx
-8. **State is centralized** — all useState in page.tsx, pass down as props
-9. **TypeScript strict** — no `any` except for `window.__chat` bridge
-10. **Animations** — defined in globals.css (slideUp, bounce-dot, pulse-dot) and tailwind.config.js
-11. **OCR progress bar** — uses `.ocr-fill` class from globals.css (blue→teal gradient)
-12. **Shared OCR logic** — always use `useOCRFlow` hook; never duplicate OCR state in components
-13. **Queue state** — `queue: Shipment[]` lives in page.tsx; mutate only via `updateShipment()` and `addToQueue()`
-14. **TypeScript Set spread** — use `Array.from(new Set([...]))` not `[...new Set([...])]` (ES target compatibility)
-15. **shadcn/ui components** — use from `src/components/ui/`; available: `button`, `badge`, `dialog`, `input`, `textarea`, `tabs`, `scroll-area`, `progress`, `checkbox`, `separator`, `sonner`
-16. **shadcn theming** — CSS vars in `globals.css` `@layer base :root {}` are mapped to BizX hex values (`--primary: #0463EF`, `--accent: #16EA9E` etc.); never change these vars to oklch or other formats
-17. **BizX gradient buttons** — keep as raw `<button>` with inline `style={{ background: 'linear-gradient(...)' }}`; do not replace with shadcn Button for gradient CTAs
-18. **Toast notifications** — use `import { toast } from 'sonner'` (not custom state); `<Toaster>` is already in layout.tsx
+
+### Design rules → see [DESIGN.md](./DESIGN.md) for full detail
+1. **BizX colors only** — never use Tailwind color classes for brand colors; use inline `style={{ color: '#0463EF' }}` or `C.*` constants in page.tsx
+2. **IBM Plex Sans Thai** — loaded via `<link>` in layout.tsx, not `next/font`
+3. **New bot HTML messages** — use `C.*` constants + `btnPrimary`, `chipStyle` etc. helper strings from top of page.tsx
+4. **No emoji in bot messages** — use SVG helpers (`icCheck`, `icX`, `icWarn` etc.) from page.tsx
+5. **BizX gradient buttons** — raw `<button>` with inline gradient style; do not use shadcn Button for gradient CTAs
+6. **shadcn theming** — CSS vars in `globals.css :root {}` stay as hex (`--primary: #0463EF`); never change to oklch
+7. **Toast** — `import { toast } from 'sonner'`; `<Toaster>` already in layout.tsx
+
+### Architecture rules
+8. **New chat commands** — add to `handleSend()` in page.tsx before the fallback branch
+9. **New sidebar items** — add to `mainItems` array in Sidebar.tsx
+10. **New special message types** — add content key + React component branch in ChatArea.tsx
+11. **State is centralized** — all useState in page.tsx, pass down as props
+12. **TypeScript strict** — no `any` except for `window.__chat` bridge
+13. **Animations** — defined in globals.css (slideUp, bounce-dot, pulse-dot) and tailwind.config.js; OCR bar uses `.ocr-fill`
+14. **Shared OCR logic** — always use `useOCRFlow` hook; never duplicate OCR state in components
+15. **Queue state** — `queue: Shipment[]` lives in page.tsx; mutate only via `updateShipment()` and `addToQueue()`
+16. **TypeScript Set spread** — use `Array.from(new Set([...]))` not `[...new Set([...])]` (ES target compatibility)
+17. **shadcn/ui components** — use from `src/components/ui/`; available: `button`, `badge`, `dialog`, `input`, `textarea`, `tabs`, `scroll-area`, `progress`, `checkbox`, `separator`, `sonner`
 
 ---
 
