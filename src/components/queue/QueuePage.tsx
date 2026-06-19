@@ -9,6 +9,7 @@ import { toast as sonnerToast } from 'sonner'
 import { AGENCY_LABEL, AGENCY_SHORT, STATUS_META } from '@/lib/mock/queue'
 import { OcrProgress } from '@/components/chat/OcrProgress'
 import { useOCRFlow }  from '@/hooks/useOCRFlow'
+import { ChatArea } from '@/components/chat/ChatArea'
 import type { Shipment, ShipmentStatus, ChatMessage } from '@/lib/types'
 import { generateId, getTime } from '@/lib/utils'
 
@@ -360,66 +361,38 @@ function ShipmentChatView({
         </div>
       </div>
 
-      {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3" style={{ background: '#F9FAFB' }}>
-        {localMessages.map(msg => (
-          <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'bot' && (
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5"
-                style={{ background: 'linear-gradient(135deg,#010136,#0463EF)', color: '#fff' }}>
-                AI
-              </div>
-            )}
-            <div style={{ maxWidth: '75%' }}>
-              <div className="px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap"
-                style={{
-                  background: msg.role === 'user' ? 'linear-gradient(135deg,#034DBA,#0463EF)' : '#fff',
-                  color: msg.role === 'user' ? '#fff' : '#374151',
-                  border: msg.role === 'bot' ? '1px solid #E5E7EB' : 'none',
-                  borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                }}>
-                {msg.isHtml
-                  ? <div dangerouslySetInnerHTML={{ __html: msg.content }} />
-                  : msg.content}
-              </div>
-              <p className="text-[9px] mt-0.5 px-1" style={{ color: '#BCBCBC', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
-                {msg.time} น.
-              </p>
-            </div>
-            {msg.role === 'user' && (
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5"
-                style={{ background: 'linear-gradient(135deg,#40406A,#0463EF)', color: '#fff' }}>
-                ปว
-              </div>
-            )}
-          </div>
-        ))}
+      {/* Chat history — read-only ChatArea */}
+      <div className="flex-1 overflow-y-auto" style={{ background: '#F2F2F2' }}>
+        <ChatArea messages={localMessages} readOnly />
 
-        {/* OCR progress inside chat */}
+        {/* OCR progress (live, appended below history) */}
         {isOCRing && (
-          <div className="flex gap-2.5">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg,#010136,#0463EF)', color: '#fff' }}>AI</div>
-            <div style={{ maxWidth: '75%' }}>
-              <OcrProgress progress={ocrProgress} completedStages={ocrStages} />
+          <div className="px-5 pb-4">
+            <div className="flex gap-2.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg,#010136,#0463EF)', color: '#fff' }}>AI</div>
+              <div style={{ maxWidth: '75%' }}>
+                <OcrProgress progress={ocrProgress} completedStages={ocrStages} />
+              </div>
             </div>
           </div>
         )}
 
         {/* OCR upload prompt if no draft yet */}
         {needsOCR && !isOCRing && localMessages.length > 0 && (
-          <div className="flex gap-2.5">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5"
-              style={{ background: 'linear-gradient(135deg,#010136,#0463EF)', color: '#fff' }}>AI</div>
-            <div className="flex-1" style={{ maxWidth: '75%' }}>
-              <div className="px-3 py-2.5 text-xs" style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '4px 18px 18px 18px' }}>
-                <p className="mb-2" style={{ color: '#374151' }}>กรุณาอัปโหลดเอกสารเพื่อเริ่ม OCR</p>
-                <button onClick={handleOCR}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
-                  <Search size={12} /> เริ่ม OCR และวิเคราะห์
-                </button>
+          <div className="px-5 pb-4">
+            <div className="flex gap-2.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5"
+                style={{ background: 'linear-gradient(135deg,#010136,#0463EF)', color: '#fff' }}>AI</div>
+              <div className="flex-1" style={{ maxWidth: '75%' }}>
+                <div className="px-3 py-2.5 text-xs" style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '4px 18px 18px 18px' }}>
+                  <p className="mb-2" style={{ color: '#374151' }}>กรุณาอัปโหลดเอกสารเพื่อเริ่ม OCR</p>
+                  <button onClick={handleOCR}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg,#034DBA,#0463EF)' }}>
+                    <Search size={12} /> เริ่ม OCR และวิเคราะห์
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -42,22 +42,24 @@ import { User }              from 'lucide-react'
 
 interface ChatAreaProps {
   messages: ChatMessage[]
-  isTyping: boolean
-  ocrProgress: number
-  ocrStages: string[]
-  formValues: Record<string, string>
-  currentStep: string
-  pendingRef: string
-  confirmedFlagIds: string[]
-  confirmedFlagValues: Record<string,string>
-  flagsActiveSuffix: string
-  spnEntries: SPNEntry[]
-  onFormChange: (key: string, val: string) => void
-  onPreview: () => void
-  onFullUploadOCR: (slots: UploadSlots) => void
-  onQuickSend: (text: string) => void
-  onConnected: (ref: string) => void
-  onRequestPermit: (refs: string[]) => void
+  isTyping?: boolean
+  ocrProgress?: number
+  ocrStages?: string[]
+  formValues?: Record<string, string>
+  currentStep?: string
+  pendingRef?: string
+  confirmedFlagIds?: string[]
+  confirmedFlagValues?: Record<string,string>
+  flagsActiveSuffix?: string
+  spnEntries?: SPNEntry[]
+  onFormChange?: (key: string, val: string) => void
+  onPreview?: () => void
+  onFullUploadOCR?: (slots: UploadSlots) => void
+  onQuickSend?: (text: string) => void
+  onConnected?: (ref: string) => void
+  onRequestPermit?: (refs: string[]) => void
+  /** When true: renders history view — buttons disabled, live components replaced with static summaries */
+  readOnly?: boolean
 }
 
 const WELCOME_CHIPS = [
@@ -83,13 +85,18 @@ function WelcomeMessage({ onQuickSend }: { onQuickSend: (v: string) => void }) {
 }
 
 export function ChatArea({
-  messages, isTyping, ocrProgress, ocrStages,
-  formValues, currentStep, pendingRef, spnEntries, confirmedFlagIds, confirmedFlagValues, flagsActiveSuffix,
-  onFormChange, onPreview, onFullUploadOCR, onQuickSend, onConnected, onRequestPermit,
+  messages, isTyping = false, ocrProgress = 0, ocrStages = [],
+  formValues = {}, currentStep = 'idle', pendingRef = '', spnEntries = [],
+  confirmedFlagIds = [], confirmedFlagValues = {}, flagsActiveSuffix = '',
+  onFormChange = () => {}, onPreview = () => {}, onFullUploadOCR = () => {},
+  onQuickSend = () => {}, onConnected = () => {}, onRequestPermit = () => {},
+  readOnly = false,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
-  useEffect(() => { applyConfirmedFlags(confirmedFlagIds, flagsActiveSuffix, confirmedFlagValues) }, [messages, confirmedFlagIds, confirmedFlagValues, flagsActiveSuffix])
+  useEffect(() => {
+    if (!readOnly) applyConfirmedFlags(confirmedFlagIds, flagsActiveSuffix, confirmedFlagValues)
+  }, [messages, confirmedFlagIds, confirmedFlagValues, flagsActiveSuffix, readOnly])
 
   return (
     <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4" style={{ background: '#F2F2F2' }}>
@@ -102,6 +109,7 @@ export function ChatArea({
           onFormChange={onFormChange} onPreview={onPreview}
           onFullUploadOCR={onFullUploadOCR} onQuickSend={onQuickSend}
           onConnected={onConnected} onRequestPermit={onRequestPermit}
+          readOnly={readOnly}
         />
       ))}
       {isTyping && <TypingIndicator />}
@@ -122,9 +130,32 @@ interface MessageRowProps {
   onQuickSend: (text: string) => void
   onConnected: (ref: string) => void
   onRequestPermit: (refs: string[]) => void
+  readOnly: boolean
 }
 
-function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onPreview, onFullUploadOCR, onQuickSend, pendingRef, spnEntries, onConnected, onRequestPermit }: MessageRowProps) {
+// Static placeholder cards shown in read-only mode for live special keys
+function ReadOnlySpecialCard({ content }: { content: string }) {
+  const map: Record<string, { icon: string; label: string; sub: string }> = {
+    ocr_progress:    { icon: '⚙️', label: 'OCR & วิเคราะห์เอกสาร', sub: 'ขั้นตอนนี้เสร็จสิ้นแล้ว' },
+    show_form:       { icon: '📋', label: 'ฟอร์มกรอกข้อมูล', sub: 'ข้อมูลถูกบันทึกแล้ว' },
+    show_full_upload:{ icon: '📁', label: 'อัปโหลดเอกสารชุด', sub: 'เอกสารถูกประมวลผลแล้ว' },
+    show_connect:    { icon: '🔗', label: 'เชื่อมต่อ ShippingNet', sub: 'เชื่อมต่อสำเร็จแล้ว' },
+    show_spn_list:   { icon: '📄', label: 'รายการ SPN', sub: 'เลือกรายการแล้ว' },
+    welcome:         { icon: '👋', label: 'ข้อความต้อนรับ', sub: '' },
+  }
+  const c = map[content] ?? { icon: '💬', label: content, sub: '' }
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <span style={{ fontSize: 18 }}>{c.icon}</span>
+      <div>
+        <p className="text-xs font-semibold" style={{ color: '#40406A' }}>{c.label}</p>
+        {c.sub && <p className="text-[11px]" style={{ color: '#8080A5' }}>{c.sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onPreview, onFullUploadOCR, onQuickSend, pendingRef, spnEntries, onConnected, onRequestPermit, readOnly }: MessageRowProps) {
   // User bubble
   if (msg.role === 'user') {
     return (
@@ -150,6 +181,8 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
 
   // Bot bubble — centered full-width card
   const SPECIALS = ['welcome','ocr_progress','show_form','show_full_upload','show_connect','show_spn_list']
+  const isSpecial = SPECIALS.includes(msg.content)
+
   return (
     <div className="flex flex-col items-center w-full msg-appear">
       <div className="w-full" style={{ maxWidth: '680px' }}>
@@ -164,9 +197,13 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
           className="rounded-2xl px-5 py-4 leading-relaxed w-full"
           style={{ background: '#fff', border: '1px solid #DDE1F8', boxShadow: '0 2px 12px rgba(4,10,80,0.07)', color: '#010136', fontSize: '13px' }}
         >
-          {msg.content === 'welcome' && <WelcomeMessage onQuickSend={onQuickSend} />}
-          {msg.content === 'ocr_progress' && <OcrProgress progress={ocrProgress} completedStages={ocrStages} />}
-          {msg.content === 'show_form' && (
+          {/* Read-only: replace live components with static summaries */}
+          {readOnly && isSpecial && <ReadOnlySpecialCard content={msg.content} />}
+
+          {/* Live mode: special components */}
+          {!readOnly && msg.content === 'welcome' && <WelcomeMessage onQuickSend={onQuickSend} />}
+          {!readOnly && msg.content === 'ocr_progress' && <OcrProgress progress={ocrProgress} completedStages={ocrStages} />}
+          {!readOnly && msg.content === 'show_form' && (
             <>
               <div className="flex items-center gap-2 text-sm font-semibold mb-2" style={{ color: '#0D8F61' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0D8F61" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -175,13 +212,13 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
               <FormPanel formValues={formValues} onChange={onFormChange} onPreview={onPreview} />
             </>
           )}
-          {msg.content === 'show_connect' && (
+          {!readOnly && msg.content === 'show_connect' && (
             <ConnectPanel onConnect={() => onConnected(pendingRef)} />
           )}
-          {msg.content === 'show_spn_list' && (
+          {!readOnly && msg.content === 'show_spn_list' && (
             <SPNListPanel entries={spnEntries} onRequestPermit={onRequestPermit} />
           )}
-          {msg.content === 'show_full_upload' && (
+          {!readOnly && msg.content === 'show_full_upload' && (
             <>
               <p className="text-sm font-semibold mb-1 flex items-center gap-1.5" style={{ color: '#010136' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -190,8 +227,14 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
               <FullUploadPanel onStartOCR={onFullUploadOCR} />
             </>
           )}
-          {!SPECIALS.includes(msg.content) && msg.isHtml  && <div dangerouslySetInnerHTML={{ __html: msg.content }} />}
-          {!SPECIALS.includes(msg.content) && !msg.isHtml && msg.content}
+
+          {/* HTML / plain text messages */}
+          {!isSpecial && msg.isHtml && (
+            // In read-only mode wrap with pointer-events:none so buttons are visible but non-clickable
+            <div style={readOnly ? { pointerEvents: 'none', opacity: 0.92 } : undefined}
+              dangerouslySetInnerHTML={{ __html: msg.content }} />
+          )}
+          {!isSpecial && !msg.isHtml && msg.content}
         </div>
         <p className="text-[10px] mt-1 ml-1" style={{ color: '#999999' }}>{msg.time}</p>
       </div>
