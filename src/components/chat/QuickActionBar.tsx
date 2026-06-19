@@ -25,14 +25,10 @@ export function QuickActionBar({ onCreateRGoods, onShowQueueStatus, onGoToQueue,
 
   return (
     <div
-      className="px-4 pt-2 pb-1 flex items-center gap-2 overflow-x-auto"
-      style={{
-        background: '#fff',
-        borderTop: '1px solid #F0F0F0',
-        scrollbarWidth: 'none',
-        zIndex: 20,
-      }}
+      className="px-4 pt-2 pb-1 flex justify-center overflow-x-auto"
+      style={{ background: 'transparent', scrollbarWidth: 'none' }}
     >
+      <div className="flex items-center justify-center gap-2" style={{ width: '100%', maxWidth: '680px' }}>
       {chips.map(({ id, label, Icon, blue, bg, hover }) => (
         <button
           key={id}
@@ -52,6 +48,7 @@ export function QuickActionBar({ onCreateRGoods, onShowQueueStatus, onGoToQueue,
           {label}
         </button>
       ))}
+      </div>
     </div>
   )
 }
