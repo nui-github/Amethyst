@@ -1,5 +1,5 @@
 'use client'
-import { Plus, Activity, ListChecks, Upload } from 'lucide-react'
+import { FilePlus, ClipboardCheck, ListChecks, Upload } from 'lucide-react'
 
 interface QuickActionBarProps {
   onCreateRGoods: () => void
@@ -9,8 +9,8 @@ interface QuickActionBarProps {
 }
 
 const chips = [
-  { id: 'rgoods',  label: 'สร้าง RGoods',    Icon: Plus,        blue: '#0463EF', bg: 'rgba(4,99,239,0.08)',  hover: 'rgba(4,99,239,0.15)' },
-  { id: 'status',  label: 'ดูสถานะใบขน',    Icon: Activity,    blue: '#0D8F61', bg: 'rgba(13,143,97,0.08)', hover: 'rgba(13,143,97,0.15)' },
+  { id: 'rgoods',  label: 'ขอใบอนุญาตนำเข้า',    Icon: FilePlus,        blue: '#0463EF', bg: 'rgba(4,99,239,0.08)',  hover: 'rgba(4,99,239,0.15)' },
+  { id: 'status',  label: 'ดูสถานะการยื่นขอใบอนุญาต', Icon: ClipboardCheck, blue: '#0D8F61', bg: 'rgba(13,143,97,0.08)', hover: 'rgba(13,143,97,0.15)' },
   { id: 'queue',   label: 'จัดการคิวงาน',   Icon: ListChecks,  blue: '#7C3AED', bg: 'rgba(124,58,237,0.08)',hover: 'rgba(124,58,237,0.15)' },
   { id: 'upload',  label: 'อัปโหลดเอกสาร',  Icon: Upload,      blue: '#B45309', bg: 'rgba(180,83,9,0.08)',  hover: 'rgba(180,83,9,0.15)' },
 ]
