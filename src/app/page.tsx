@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Sidebar }    from '@/components/chat/Sidebar'
 import { ChatHeader } from '@/components/chat/ChatHeader'
 import { ChatArea }   from '@/components/chat/ChatArea'
@@ -77,7 +77,7 @@ const menuCard = (onclick: string, iconHtml: string, title: string, desc: string
 
 const WELCOME_CONTENT = `<div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-    <p style="font-size:14px;font-weight:700;color:${C.navy};margin:0">สวัสดีครับ! ผมคือ ShippingNet Assistant</p>
+    <p style="font-size:14px;font-weight:700;color:${C.navy};margin:0">สวัสดีครับ! ผมคือ Netbay Agent</p>
   </div>
   <p style="font-size:12px;color:${C.n600};margin:0 0 14px;line-height:1.6">ช่วยท่านสร้างใบอนุญาตนำเข้า RGoods และจัดการเอกสารศุลกากรได้ครับ</p>
   <p style="font-size:12px;font-weight:600;color:${C.navy};margin:0 0 10px">ต้องการทำอะไรวันนี้?</p>
@@ -103,6 +103,11 @@ export default function Home() {
   const [isConnected, setIsConnected]       = useState(false)
   const [pendingRef, setPendingRef]          = useState('')
   const [confirmedFlagIds, setConfirmedFlagIds] = useState<string[]>([])
+  const [confirmedFlagValues, setConfirmedFlagValues] = useState<Record<string,string>>({})
+  const [flagsActiveSuffix, setFlagsActiveSuffix] = useState('')
+  const flagsGen = useRef(0)
+  const pendingFlagValues = useRef<Record<string,string>>({})
+  const emailGen = useRef(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
@@ -309,8 +314,15 @@ export default function Home() {
         // Step 3: Flags — individual confirm per flag
         withTyping(() => {
           setConfirmedFlagIds([])
-          const flagCard = (id: string, num: number, _total: number, title: string, body: string, extra = '') =>
-            `<div id="${id}" style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1.5px solid #FDE68A;margin-bottom:8px;transition:all .3s">
+          setConfirmedFlagValues({})
+          pendingFlagValues.current = {}
+          const g = 'fg' + (++flagsGen.current)
+          setFlagsActiveSuffix(g)
+          const btnSuccess = `display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:none;border-radius:8px;font-size:11px;font-weight:600;font-family:inherit;color:#fff;background:linear-gradient(135deg,#11BB7F,#16EA9E);box-shadow:0 2px 8px rgba(17,187,127,0.25)`
+          const confirmedLabel = `font-size:11px;font-weight:600;color:#0D8F61;background:rgba(22,234,158,0.12);padding:3px 8px;border-radius:6px;display:inline-block;margin-top:6px`
+          const flagCard = (baseId: string, num: number, title: string, body: string, interactive: string) => {
+            const id = `${g}_${baseId}`
+            return `<div id="${id}" style="padding:12px 14px;border-radius:12px;background:#FFFBEB;border:1.5px solid #FDE68A;margin-bottom:8px;transition:all .3s">
               <div style="display:flex;align-items:flex-start;gap:10px">
                 <div style="flex:1">
                   <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -318,40 +330,51 @@ export default function Home() {
                     <span style="font-size:12px;font-weight:700;color:#B45309">จุดที่ ${num}: ${title}</span>
                   </div>
                   <div style="font-size:11px;color:#92400E;line-height:1.6">${body}</div>
-                  ${extra}
+                  <div id="${id}_interactive">${interactive}</div>
+                  <div id="${id}_confirmed_display" style="display:none">
+                    <span id="${id}_confirmed_label" style="${confirmedLabel}"></span>
+                  </div>
                 </div>
                 <div id="${id}_btn" style="flex-shrink:0">
-                  <button onclick="window.__chat?.confirmFlag('${id}')"
-                    style="${btnPrimary};padding:5px 12px;font-size:11px">
-                    ${icCheck('#fff',11)} ยืนยัน
-                  </button>
+                  <div id="${id}_action_confirm">
+                    <button id="${id}_confirm_btn" onclick="window.__chat?.confirmFlag('${id}')" disabled
+                      style="${btnSuccess};opacity:0.35;cursor:not-allowed">
+                      ${icCheck('#fff',11)} ยืนยัน
+                    </button>
+                  </div>
+                  <div id="${id}_action_done" style="display:none;flex-direction:column;align-items:flex-end;gap:4px">
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0D8F61;padding:5px 10px;border-radius:10px;background:rgba(22,234,158,0.15)">✓ ยืนยันแล้ว</span>
+                    <button onclick="window.__chat?.unconfirmFlag('${id}')" style="${btnSecondary};font-size:10px;padding:3px 10px;border-radius:6px">แก้ไข</button>
+                  </div>
                 </div>
               </div>
             </div>`
+          }
 
           botMsg(`<div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
               ${icWarn('#B45309',15)}
               <span style="font-size:13px;font-weight:700;color:#B45309">พบ 2 จุดที่ต้องยืนยันทีละจุด</span>
             </div>
-            ${flagCard('flag_qty', 1, 2, 'ปริมาณนำเข้ามี 2 ค่า',
+            ${flagCard('flag_qty', 1, 'ปริมาณนำเข้ามี 2 ค่า',
               'Invoice: <strong>250 กก.</strong> vs Packing List: <strong>248.5 กก.</strong><br>โปรดเลือกค่าที่จะใช้ยื่น:',
               `<div style="display:flex;gap:6px;margin-top:8px">
                 <button onclick="window.__chat?.selectQty('250')" style="${btnSecondary};font-size:11px;padding:4px 10px">ใช้ 250 กก. (Invoice)</button>
                 <button onclick="window.__chat?.selectQty('248.5')" style="${btnSecondary};font-size:11px;padding:4px 10px">ใช้ 248.5 กก. (Packing)</button>
               </div>`
             )}
-            ${flagCard('flag_gmp', 2, 2, 'เลขใบรับรอง GMP อ่านไม่ชัด',
+            ${flagCard('flag_gmp', 2, 'เลขใบรับรอง GMP อ่านไม่ชัด',
               'AI ความมั่นใจ 62% — ผลอ่าน: <strong>IND-GMP-2024-••3821</strong><br>พิมพ์เลขที่ถูกต้อง หรือกดยืนยันถ้าถูกแล้ว:',
-              `<input id="gmp_input" type="text" placeholder="เช่น IND-GMP-2024-003821"
+              `<input type="text" placeholder="เช่น IND-GMP-2024-003821"
                 style="margin-top:8px;width:100%;border:1px solid #FDE68A;border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;background:#FFFEF0;color:#92400E;outline:none;box-sizing:border-box"
-                onfocus="this.style.borderColor='${C.tealMid}'" onblur="this.style.borderColor='#FDE68A'"/>`
+                onfocus="this.style.borderColor='${C.tealMid}'" onblur="this.style.borderColor='#FDE68A'"
+                oninput="(function(el){var id='${g}_flag_gmp';var val=el.value.trim();var ok=val.length>0;var btn=document.getElementById(id+'_confirm_btn');if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'0.35';btn.style.cursor=ok?'pointer':'not-allowed';}window.__chat?.setPendingFlagValue(id,val);})(this)"/>`
             )}
             <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E0E0E0;display:flex;align-items:center;gap:8px">
               <button onclick="window.__chat?.editAndReupload()" style="${btnSecondary}">
                 ${icX(C.n600,13)} แก้ไข / อัปโหลดใหม่
               </button>
-              <button id="flags_next_btn" data-total="2" onclick="window.__chat?.proceedAfterFlags()"
+              <button id="${g}_flags_next_btn" data-total="2" onclick="window.__chat?.proceedAfterFlags()"
                 disabled
                 style="${btnPrimary};opacity:0.35;cursor:not-allowed;margin-left:auto">
                 ถัดไป →
@@ -431,30 +454,31 @@ export default function Home() {
   // ── EMAIL DRAFT IN CHAT ────────────────────────────────────────
   const showEmailDraftInChat = useCallback(() => {
     setStep('preview')
+    const eg = 'em' + (++emailGen.current)
     withTyping(() => {
       botMsg(`<div style="${cardWrap}">
         <div style="${cardHead};display:flex;align-items:center;gap:6px">${icList(C.blue,13)} ร่างอีเมลถึงลูกค้า</div>
         <div style="${cardBody}">
           <div style="display:grid;grid-template-columns:52px 1fr;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed ${C.n200}">
             <span style="font-size:12px;color:${C.n600}">ถึง</span>
-            <input id="email_to" type="text" placeholder="อีเมลผู้รับ เช่น name@company.com"
+            <input id="${eg}_email_to" type="text" placeholder="อีเมลผู้รับ เช่น name@company.com"
               style="width:100%;box-sizing:border-box;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;color:${C.navy};background:transparent;outline:none"
-              oninput="window.__chat?.checkEmailReady()"
+              oninput="window.__chat?.checkEmailReady('${eg}')"
               onfocus="this.style.background='#fff';this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
               onblur="this.style.background='transparent';this.style.borderColor='transparent';this.style.boxShadow='none'"/>
           </div>
           <div style="display:grid;grid-template-columns:52px 1fr;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed ${C.n200}">
             <span style="font-size:12px;color:${C.n600}">หัวข้อ</span>
-            <input id="email_subject" type="text" value="ขอยืนยันข้อมูลใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)"
+            <input id="${eg}_email_subject" type="text" value="ขอยืนยันข้อมูลใบอนุญาตนำเข้าวัตถุดิบยา (RGoods)"
               style="width:100%;box-sizing:border-box;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;color:${C.navy};background:transparent;outline:none"
-              oninput="window.__chat?.checkEmailReady()"
+              oninput="window.__chat?.checkEmailReady('${eg}')"
               onfocus="this.style.background='#fff';this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
               onblur="this.style.background='transparent';this.style.borderColor='transparent';this.style.boxShadow='none'"/>
           </div>
           <div style="padding-top:10px">
             <p style="font-size:10px;font-weight:600;text-transform:uppercase;color:${C.n500};margin:0 0 6px">เนื้อหา</p>
-            <textarea id="email_body" rows="10" style="width:100%;box-sizing:border-box;padding:10px;background:#fff;border:1px solid ${C.n200};border-radius:8px;font-size:11px;color:${C.n600};line-height:1.7;font-family:inherit;resize:vertical;outline:none;overflow-y:auto"
-              oninput="window.__chat?.checkEmailReady()"
+            <textarea id="${eg}_email_body" rows="10" style="width:100%;box-sizing:border-box;padding:10px;background:#fff;border:1px solid ${C.n200};border-radius:8px;font-size:11px;color:${C.n600};line-height:1.7;font-family:inherit;resize:vertical;outline:none;overflow-y:auto"
+              oninput="window.__chat?.checkEmailReady('${eg}')"
               onfocus="this.style.borderColor='${C.blue}';this.style.boxShadow='0 0 0 3px rgba(4,99,239,0.10)'"
               onblur="this.style.borderColor='${C.n200}';this.style.boxShadow='none'">เรียน คุณสมหญิง วัฒนกุล
 
@@ -465,12 +489,12 @@ export default function Home() {
 หากข้อมูลถูกต้องครบถ้วน กรุณาตอบกลับอีเมลนี้เพื่อยืนยัน
 
 ขอแสดงความนับถือ
-ฝ่ายพิธีการ ShippingNet</textarea>
+ฝ่ายพิธีการ Netbay</textarea>
           </div>
         </div>
       </div>
       <div style="margin-top:10px">
-        <button id="send_email_btn" onclick="window.__chat?.customerConfirmedInChat()" disabled
+        <button id="${eg}_send_email_btn" onclick="window.__chat?.emailSent('${eg}')" disabled
           style="${btnPrimary};width:100%;justify-content:center;opacity:0.35;cursor:not-allowed">
           ${icCheck('#fff',13)} ส่งอีเมล
         </button>
@@ -550,11 +574,11 @@ export default function Home() {
       showImportLicenseMenu:  () => showImportLicenseMenu(),
       showPreviewInChat:      () => showPreviewInChat(),
       showEmailDraftInChat:   () => showEmailDraftInChat(),
-      checkEmailReady:        () => {
-        const to   = (document.getElementById('email_to')      as HTMLInputElement  | null)?.value?.trim()
-        const subj = (document.getElementById('email_subject')  as HTMLInputElement  | null)?.value?.trim()
-        const body = (document.getElementById('email_body')     as HTMLTextAreaElement | null)?.value?.trim()
-        const btn  =  document.getElementById('send_email_btn') as HTMLButtonElement  | null
+      checkEmailReady:        (eg: string) => {
+        const to   = (document.getElementById(eg + '_email_to')      as HTMLInputElement  | null)?.value?.trim()
+        const subj = (document.getElementById(eg + '_email_subject')  as HTMLInputElement  | null)?.value?.trim()
+        const body = (document.getElementById(eg + '_email_body')     as HTMLTextAreaElement | null)?.value?.trim()
+        const btn  =  document.getElementById(eg + '_send_email_btn') as HTMLButtonElement  | null
         if (!btn) return
         const ready = !!(to && subj && body)
         btn.disabled = !ready
@@ -562,7 +586,23 @@ export default function Home() {
         btn.style.cursor  = ready ? 'pointer' : 'not-allowed'
       },
       confirmFlag:            (id: string) => {
+        const value = pendingFlagValues.current[id] || ''
         setConfirmedFlagIds(prev => prev.includes(id) ? prev : [...prev, id])
+        setConfirmedFlagValues(prev => ({ ...prev, [id]: value }))
+      },
+      unconfirmFlag:          (id: string) => {
+        const el = document.getElementById(id)
+        if (el) { el.style.background = '#FFFBEB'; el.style.border = '1.5px solid #FDE68A' }
+        const interactive      = document.getElementById(id + '_interactive')
+        const confirmedDisplay = document.getElementById(id + '_confirmed_display')
+        if (interactive)      interactive.style.display = 'block'
+        if (confirmedDisplay) confirmedDisplay.style.display = 'none'
+        const actionConfirm = document.getElementById(id + '_action_confirm')
+        const actionDone    = document.getElementById(id + '_action_done')
+        if (actionConfirm) actionConfirm.style.display = 'block'
+        if (actionDone)    actionDone.style.display = 'none'
+        setConfirmedFlagIds(prev => prev.filter(x => x !== id))
+        setConfirmedFlagValues(prev => { const n = { ...prev }; delete n[id]; return n })
       },
       proceedAfterFlags:      () => {
         userMsg('ยืนยันทุกจุดแล้ว')
@@ -586,18 +626,55 @@ export default function Home() {
             </div>`)
         }, 600)
       },
+      setPendingFlagValue:    (id: string, val: string) => { pendingFlagValues.current[id] = val },
       selectQty:              (val: string) => {
-        const qtyBtns = document.querySelectorAll('#flag_qty button[onclick*="selectQty"]')
+        const g = 'fg' + flagsGen.current
+        const id = `${g}_flag_qty`
+        const qtyBtns = document.querySelectorAll(`#${id} button[onclick*="selectQty"]`)
         qtyBtns.forEach((b: any) => { b.style.background = '#F0F0F0'; b.style.color = '#666' })
         const clicked = Array.from(qtyBtns).find((b: any) => b.textContent.includes(val))
         if (clicked) { (clicked as any).style.background = 'rgba(22,234,158,0.15)'; (clicked as any).style.color = '#0D8F61' }
+        const label = val === '250' ? 'ใช้ 250 กก. (Invoice)' : 'ใช้ 248.5 กก. (Packing)'
+        pendingFlagValues.current[id] = label
+        const confirmBtn = document.getElementById(`${id}_confirm_btn`) as HTMLButtonElement | null
+        if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.style.opacity = '1'; confirmBtn.style.cursor = 'pointer' }
       },
       confirmDraft:           () => { userMsg('ยืนยันและดำเนินการต่อ'); showEmailDraftInChat() },
       editAndReupload:        () => {
         userMsg('แก้ไข / อัปโหลดใหม่')
         withTyping(() => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) }, 300)
       },
+      emailSent: (_eg: string) => {
+        userMsg('ส่งอีเมลแล้ว')
+        withTyping(() => {
+          const choiceCard = (onclick: string, icon: string, title: string, desc: string, accent: string) =>
+            `<div onclick="${onclick}"
+              style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s"
+              onmouseover="this.style.borderColor='${accent}';this.style.background='${accent}14'"
+              onmouseout="this.style.borderColor='${C.n200}';this.style.background='#fff'">
+              <div style="width:36px;height:36px;border-radius:10px;background:${accent}1A;display:flex;align-items:center;justify-content:center;flex-shrink:0">${icon}</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:700;color:${C.navy};margin:0">${title}</p>
+                <p style="font-size:11px;color:${C.n500};margin:2px 0 0;line-height:1.4">${desc}</p>
+              </div>
+              <span style="color:${C.n300};font-size:18px;flex-shrink:0">›</span>
+            </div>`
+          botMsg(`<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(22,234,158,0.08);border:1px solid rgba(22,234,158,0.35);border-radius:10px;margin-bottom:14px">
+              ${icCheck(C.tealDark, 15)}
+              <span style="font-size:13px;color:${C.tealDark};font-weight:600">ส่งอีเมลเรียบร้อยแล้ว — รอการตอบกลับจากลูกค้า</span>
+            </div>
+            <p style="font-size:13px;font-weight:600;color:${C.navy};margin:0 0 10px">ลูกค้าตอบกลับแล้วหรือยังครับ?</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${choiceCard('window.__chat?.customerConfirmedInChat()', icCheck(C.tealDark, 17), 'ลูกค้ายืนยันเอกสารแล้ว', 'ดำเนินการต่อที่ขั้นตอนตรวจสอบข้อมูลและยื่นกรม', C.tealDark)}
+              ${choiceCard('window.__chat?.editDocsFromEmail()', icFile(C.blue, 17), 'แก้ไขเอกสาร', 'กลับไปอัปโหลดและแก้ไขเอกสารใหม่', C.blue)}
+            </div>`)
+        }, 600)
+      },
       customerConfirmedInChat:  () => { userMsg('ลูกค้ายืนยันเอกสารแล้ว'); showPreviewInChat() },
+      editDocsFromEmail:        () => {
+        userMsg('แก้ไขเอกสาร')
+        withTyping(() => { setStep('full_upload'); addMessage({ role: 'bot', content: 'show_full_upload', isHtml: true }) }, 300)
+      },
       confirmSubmitFromChat:    () => { userMsg('ยืนยันส่งกรม'); handleSubmit() },
     }
   })
@@ -1158,6 +1235,8 @@ export default function Home() {
             pendingRef={pendingRef}
             spnEntries={spnEntries}
             confirmedFlagIds={confirmedFlagIds}
+            confirmedFlagValues={confirmedFlagValues}
+            flagsActiveSuffix={flagsActiveSuffix}
             onFormChange={handleFormChange} onPreview={handlePreview}
             onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
             onConnected={showConnectOptions}

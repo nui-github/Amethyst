@@ -3,7 +3,7 @@ import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
 export const metadata: Metadata = {
-  title: 'ShippingNet Assistant',
+  title: 'Netbay Agent',
   description: 'ระบบสร้างใบอนุญาต RGoods & Customs',
 }
 

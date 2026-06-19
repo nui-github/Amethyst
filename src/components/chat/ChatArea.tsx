@@ -1,16 +1,27 @@
 'use client'
 import { useEffect, useRef } from 'react'
 
-const CONFIRMED_BTN_HTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0D8F61;padding:5px 12px;border-radius:10px;background:rgba(22,234,158,0.15)">✓ ยืนยันแล้ว</span>`
 
-function applyConfirmedFlags(ids: string[]) {
+function applyConfirmedFlags(ids: string[], suffix: string, values: Record<string,string>) {
   for (const id of ids) {
+    // Card background
     const el = document.getElementById(id)
     if (el) { el.style.background = 'rgba(22,234,158,0.06)'; el.style.border = '1.5px solid rgba(22,234,158,0.4)' }
-    const btn = document.getElementById(id + '_btn')
-    if (btn && !btn.innerHTML.includes('ยืนยันแล้ว')) btn.innerHTML = CONFIRMED_BTN_HTML
+    // Swap interactive ↔ confirmed display
+    const interactive       = document.getElementById(id + '_interactive')
+    const confirmedDisplay  = document.getElementById(id + '_confirmed_display')
+    const confirmedLabel    = document.getElementById(id + '_confirmed_label')
+    if (interactive)      interactive.style.display = 'none'
+    if (confirmedDisplay) confirmedDisplay.style.display = 'block'
+    if (confirmedLabel && values[id]) confirmedLabel.textContent = values[id]
+    // Swap confirm btn ↔ done state
+    const actionConfirm = document.getElementById(id + '_action_confirm')
+    const actionDone    = document.getElementById(id + '_action_done')
+    if (actionConfirm) actionConfirm.style.display = 'none'
+    if (actionDone)    actionDone.style.display = 'flex'
   }
-  const nextBtn = document.getElementById('flags_next_btn') as HTMLButtonElement | null
+  if (!suffix) return
+  const nextBtn = document.getElementById(suffix + '_flags_next_btn') as HTMLButtonElement | null
   if (nextBtn) {
     const total = parseInt(nextBtn.dataset.total || '0', 10)
     const allDone = ids.length >= total
@@ -38,6 +49,8 @@ interface ChatAreaProps {
   currentStep: string
   pendingRef: string
   confirmedFlagIds: string[]
+  confirmedFlagValues: Record<string,string>
+  flagsActiveSuffix: string
   spnEntries: SPNEntry[]
   onFormChange: (key: string, val: string) => void
   onPreview: () => void
@@ -58,7 +71,7 @@ function WelcomeMessage({ onQuickSend }: { onQuickSend: (v: string) => void }) {
   return (
     <div>
       <p className="text-sm leading-relaxed" style={{ color: '#010136' }}>
-        สวัสดีครับ! ผมคือ <strong>ShippingNet Assistant</strong> 👋<br />
+        สวัสดีครับ! ผมคือ <strong>Netbay Agent</strong> 👋<br />
         ช่วยท่านสร้างใบอนุญาต, RGoods, และจัดการเอกสารศุลกากรได้ครับ
       </p>
       <p className="text-[11px] font-bold uppercase tracking-wider mt-3 mb-1" style={{ color: '#999999' }}>
@@ -71,12 +84,12 @@ function WelcomeMessage({ onQuickSend }: { onQuickSend: (v: string) => void }) {
 
 export function ChatArea({
   messages, isTyping, ocrProgress, ocrStages,
-  formValues, currentStep, pendingRef, spnEntries, confirmedFlagIds,
+  formValues, currentStep, pendingRef, spnEntries, confirmedFlagIds, confirmedFlagValues, flagsActiveSuffix,
   onFormChange, onPreview, onFullUploadOCR, onQuickSend, onConnected, onRequestPermit,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
-  useEffect(() => { applyConfirmedFlags(confirmedFlagIds) }, [messages, confirmedFlagIds])
+  useEffect(() => { applyConfirmedFlags(confirmedFlagIds, flagsActiveSuffix, confirmedFlagValues) }, [messages, confirmedFlagIds, confirmedFlagValues, flagsActiveSuffix])
 
   return (
     <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4" style={{ background: '#F2F2F2' }}>

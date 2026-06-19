@@ -183,16 +183,28 @@ showImportLicenseMenu() → 3 cards:
                                   → onFullUploadOCR() → OCR → showForm()
 
 Flag confirm flow:
-  - setConfirmedFlagIds([]) on new flags message (reset state)
-  - each flag has own "ยืนยัน" button → confirmFlag(id)
-  - "ถัดไป →" button (id=flags_next_btn, data-total=N) disabled until all N flags confirmed
-  - applyConfirmedFlags() in ChatArea re-applies DOM state on every render
+  - setConfirmedFlagIds([]) + setConfirmedFlagValues({}) + pendingFlagValues.current={} on new flags
+  - Each flag generation gets unique prefix via flagsGen ref (e.g. fg1_, fg2_) to avoid DOM ID collisions
+  - "ยืนยัน" button (teal/green) starts disabled; enabled only after user selects qty OR types GMP value
+  - confirmFlag(id): stores value → setConfirmedFlagIds + setConfirmedFlagValues
+  - unconfirmFlag(id): restores interactive area DOM + removes from state (reversible until ถัดไป)
+  - applyConfirmedFlags(ids, suffix, values) in ChatArea: swaps _interactive ↔ _confirmed_display, shows value label
+  - "ถัดไป →" button id="${g}_flags_next_btn" disabled until all N flags confirmed
+
+After ถัดไป → 2-choice card:
+  ├─ "ต้องการส่งอีเมล" → showEmailDraftInChat()
+  └─ "ตรวจสอบข้อมูลก่อนส่งกรม" → showPreviewInChat()
+
+After "ส่งอีเมล" sent → emailSent() shows:
+  ├─ "ลูกค้ายืนยันเอกสารแล้ว" → customerConfirmedInChat() → showPreviewInChat()
+  └─ "แก้ไขเอกสาร" → editDocsFromEmail() → show_full_upload
 
 Email draft (showEmailDraftInChat):
+  - Each call generates unique prefix via emailGen ref (e.g. em1_, em2_) to avoid DOM ID collisions
   - "ถึง" field: placeholder only (user fills email)
   - "หัวข้อ" field: AI pre-filled, user can edit
   - "เนื้อหา": AI pre-filled textarea, scrollable, user can edit
-  - "ส่งอีเมล" button: disabled until To+Subject+Body all non-empty (checkEmailReady)
+  - "ส่งอีเมล" button: disabled until To+Subject+Body all non-empty — checkEmailReady(eg) uses prefixed IDs
 ```
 
 ### ChatStep states
@@ -297,25 +309,36 @@ no_permit = ไม่ต้องขอใบอนุญาต (HPLC etc.)
 Bot messages contain inline HTML with `onclick`. Page exposes:
 ```ts
 (window as any).__chat = {
-  sendQuick:          (t: string) => handleSend(t),
-  triggerUpload:      () => withTyping(() => showUpload(), 300),
-  triggerFullUpload:  () => { setStep('full_upload'); addMessage({...}) },
-  startOCRDemo:       () => startOCR(),
-  onConnected:        (ref: string) => withTyping(() => showConnectOptions(ref), 600),
-  triggerConnect:     () => { ... },            // show ConnectPanel
-  showSPNList:        () => showSPNListInChat(),      // show SPNListPanel in chat
-  goToQueue:          (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
-  // Not-found flow choices
-  chooseXML:          () => withTyping(() => showXMLUpload(), 300),
-  chooseInvoice:      () => withTyping(() => showInvoiceUpload(), 300),
-  chooseFullUpload:   () => { setStep('full_upload'); addMessage({...}) },
-  // Not-found sub-steps
-  processXML:         () => withTyping(() => xmlDone(), 2000),
-  processInvoice:     () => withTyping(() => showHsAnalysis(), 2500),
-  proceedFromInvoice: () => withTyping(() => showFormFromInvoice(), 700),
-  spnNotFoundBack:    () => withTyping(() => spnNotFound(currentRef), 300),
+  sendQuick:              (t: string) => handleSend(t),
+  triggerUpload:          () => withTyping(() => showUpload(), 300),
+  triggerFullUpload:      () => { setStep('full_upload'); addMessage({...}) },
+  startOCRDemo:           () => startOCR(),
+  onConnected:            (ref: string) => withTyping(() => showConnectOptions(ref), 600),
+  triggerConnect:         () => { ... },
+  showSPNList:            () => showSPNListInChat(),
+  goToQueue:              (id: string) => { setQueueOpenId(id); setSidebarActive('queue') },
+  chooseCustomsDocs:      () => single upload box for ใบขนสินค้า,
+  chooseInvoiceFirst:     () => invoice-first upload,
+  chooseDocs:             () => full_upload panel,
+  proceedAfterFlags:      () => show 2-choice card (email / preview),
+  // Flag confirm (unique prefix eg. fg1_flag_qty per flagsGen)
+  setPendingFlagValue:    (id, val) => pendingFlagValues.current[id] = val,
+  selectQty:              (val) => highlight qty btn + store pendingFlagValue + enable confirm btn,
+  confirmFlag:            (id) => read pendingFlagValues → setConfirmedFlagIds + setConfirmedFlagValues,
+  unconfirmFlag:          (id) => restore interactive DOM + remove from state,
+  // Email draft (unique prefix eg. em1_ per emailGen)
+  showEmailDraftInChat:   () => renders draft with eg-prefixed IDs,
+  checkEmailReady:        (eg) => check eg_email_to/subject/body → enable/disable eg_send_email_btn,
+  emailSent:              (eg) => userMsg + show 2-choice (ลูกค้ายืนยัน / แก้ไขเอกสาร),
+  customerConfirmedInChat:() => userMsg + showPreviewInChat(),
+  editDocsFromEmail:      () => userMsg + show_full_upload,
+  showPreviewInChat:      () => preview + ยืนยันส่งกรม → handleSubmit(),
+  confirmSubmitFromChat:  () => userMsg + handleSubmit(),
+  editAndReupload:        () => userMsg + show_full_upload,
 }
 ```
+
+**ID collision prevention**: `flagsGen` ref (flagsGen.current++) and `emailGen` ref (emailGen.current++) generate unique prefixes per card generation. `getElementById` always returns the first match, so all DOM queries must use the generation-specific prefixed ID.
 
 ---
 
