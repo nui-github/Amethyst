@@ -199,8 +199,8 @@ function CollapsedRail({
         })}
       </nav>
 
-      {/* Settings */}
-      <div className="flex-shrink-0 flex justify-center py-2" style={{ borderTop: `1px solid ${L.border}` }}>
+      {/* Settings + BizX */}
+      <div className="flex-shrink-0 flex flex-col items-center py-2 gap-1">
         <div className="relative w-full flex justify-center"
           onMouseEnter={e => {
             const rect = e.currentTarget.getBoundingClientRect()
@@ -218,6 +218,25 @@ function CollapsedRail({
             <Settings size={15} />
           </button>
         </div>
+        <div style={{ height: 1, background: L.border, width: '75%' }} />
+        <a
+          href="https://bizx-uat.devnetbay.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+          onMouseOver={e => { e.currentTarget.style.background = L.hover }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent' }}
+        >
+          <svg width="20" height="22" viewBox="332 0 446 496" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M595 143L645 74.5H675L363.5 496H332L495.5 274.5L452 74.5H579L595 143ZM777.5 0L612.5 220L655 422H528L514 355.5L462.5 422H432L746 0H777.5Z" fill="url(#bizx_grad_rail)"/>
+            <defs>
+              <linearGradient id="bizx_grad_rail" x1="730.169" y1="496.006" x2="304.246" y2="79.8729" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#0463EF"/>
+                <stop offset="1" stopColor="#16EA9E"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </a>
       </div>
     </aside>
   )
