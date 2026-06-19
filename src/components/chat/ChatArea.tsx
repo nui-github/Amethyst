@@ -156,7 +156,7 @@ function MessageRow({ msg, ocrProgress, ocrStages, formValues, onFormChange, onP
         <div className="flex items-center gap-2 mb-2">
           <div
             className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.28)' }}
+            style={{ background: 'linear-gradient(90deg, #0463EF, #16EA9E)', boxShadow: '0 2px 8px rgba(4,99,239,0.28)' }}
           >AI</div>
           <span className="text-[11px] font-semibold" style={{ color: '#8080A5' }}>Netbay Agent</span>
         </div>

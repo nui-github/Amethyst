@@ -159,7 +159,7 @@ function CollapsedRail({
       <div className="flex items-center justify-center h-12 flex-shrink-0"
         style={{ borderBottom: `1px solid ${L.border}` }}>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #010136, #0463EF)' }}>
+          style={{ background: 'linear-gradient(90deg, #0463EF, #16EA9E)' }}>
           <Bot size={14} color="#fff" strokeWidth={1.75} />
         </div>
       </div>
@@ -239,7 +239,7 @@ export function Sidebar({ activeItem, onSelect, needsYouCount = 0, collapsed = f
       <div className="flex items-center gap-2.5 px-3 h-12 flex-shrink-0"
         style={{ borderBottom: `1px solid ${L.border}` }}>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.3)' }}>
+          style={{ background: 'linear-gradient(90deg, #0463EF, #16EA9E)', boxShadow: '0 2px 8px rgba(4,99,239,0.3)' }}>
           <Bot size={14} color="#fff" strokeWidth={1.75} />
         </div>
         <div className="flex-1 min-w-0">

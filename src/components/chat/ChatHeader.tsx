@@ -108,7 +108,7 @@ export function ChatHeader({
           <Activity size={14} />
         </button>
         <div className="w-7 h-7 rounded-lg ml-0.5 flex items-center justify-center text-white flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #010136, #0463EF)', boxShadow: '0 2px 8px rgba(4,99,239,0.25)' }}>
+          style={{ background: '#0463EF', boxShadow: '0 2px 8px rgba(4,99,239,0.25)' }}>
           <User size={12} />
         </div>
       </div>
