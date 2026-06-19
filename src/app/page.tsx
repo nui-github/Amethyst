@@ -109,6 +109,7 @@ export default function Home() {
   const pendingFlagValues = useRef<Record<string,string>>({})
   const emailGen = useRef(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [submittedRefNo, setSubmittedRefNo] = useState('')
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])
@@ -725,6 +726,33 @@ export default function Home() {
       } else {
         withTyping(() => showSPNListInChat(), 400)
       }
+    } else if (lower.includes('พิมพ์ใบอนุญาต')) {
+      const printData = {
+        ref: formData.ref ?? '',
+        refNo: submittedRefNo,
+        importer: formData.importer ?? '',
+        declarant: formData.declarant ?? '',
+        port: formData.port ?? '',
+        hsCode: formData.hsCode ?? '',
+        countryOrigin: formData.countryOrigin ?? '',
+        quantity: formData.quantity ?? '',
+        unit: formData.unit ?? 'กิโลกรัม',
+        invoiceNo: formData.invoiceNo ?? '',
+        invoiceDate: formData.invoiceDate ?? '',
+        lotNo: formData.lotNo ?? '',
+        uNo: formData.uNo ?? '',
+        drugRegNo: formData.drugRegNo ?? '',
+        importDate: formData.importDate ?? '',
+        goodsDesc: formData.goodsDesc ?? '',
+        licenseType: formData.licenseType ?? 'RGoods',
+        printedAt: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+      }
+      sessionStorage.setItem('__printLicenseData', JSON.stringify(printData))
+      window.open('/print/license', '_blank')
+      withTyping(() => botMsg(
+        `<span style="display:inline-flex;align-items:center;gap:5px;font-weight:700;color:${C.tealDark};font-size:13px">${icCheck(C.tealDark,15)} เปิดหน้าพิมพ์ใบอนุญาตแล้วครับ</span>
+        <p style="font-size:12px;color:${C.n600};margin-top:4px">กรุณาตรวจสอบข้อมูลในหน้าใหม่ แล้วกด <strong>พิมพ์ / บันทึก PDF</strong></p>`
+      ), 400)
     } else if (lower.includes('อัปโหลด') || lower.includes('upload')) {
       withTyping(() => showUpload(), 500)
     } else if (lower.includes('ตรวจสอบสถานะ') || lower.includes('ดูสถานะ')) {
@@ -749,7 +777,7 @@ export default function Home() {
         </div>`
       ), 700)
     }
-  }, [step, isConnected, userMsg, botMsg, withTyping, showNotConnectedWarning, showSPNListInChat])
+  }, [step, isConnected, formData, submittedRefNo, userMsg, botMsg, withTyping, showNotConnectedWarning, showSPNListInChat])
 
   // ── CONNECT OPTIONS (after login) ──────────────────────────────
   const showConnectOptions = useCallback((ref: string) => {
@@ -1169,6 +1197,7 @@ export default function Home() {
     setTimeout(() => {
       setIsTyping(false)
       const refNo = `RG-2568-${Math.floor(Math.random() * 90000 + 10000)}`
+      setSubmittedRefNo(refNo)
       botMsg(`<span style="color:${C.tealDark};font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:5px">${icCheck(C.tealDark,15)} ส่งข้อมูลสำเร็จแล้วครับ!</span>
         <div style="${cardWrap};border-color:rgba(22,234,158,0.3)">
           <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark};border-color:rgba(22,234,158,0.3)">ผลการส่งข้อมูลเข้ากรม</div>
