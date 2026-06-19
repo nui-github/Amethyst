@@ -63,7 +63,8 @@ export default function PrintLicensePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'IBM Plex Sans Thai', sans-serif; background: #fff; }
+        html, body { height: auto !important; overflow: visible !important; overflow-y: auto !important; }
+        body { font-family: 'IBM Plex Sans Thai', sans-serif; background: #f5f5f5; }
         @media print {
           @page { size: A4; margin: 15mm 15mm 15mm 20mm; }
           .no-print { display: none !important; }
