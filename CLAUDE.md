@@ -33,7 +33,9 @@ Neutral:          #F2F2F2 (app bg), #F9F9F9 (card lightest), #E0E0E0 (borders)
 ```
 Primary btn:  linear-gradient(135deg, #034DBA, #0463EF)
 Teal btn:     linear-gradient(135deg, #11BB7F, #16EA9E)
-AI avatar:    linear-gradient(135deg, #010136, #0463EF)
+AI avatar:    linear-gradient(90deg, #0463EF, #16EA9E)   ← matches OCR progress bar
+Sidebar logo: linear-gradient(90deg, #0463EF, #16EA9E)   ← same gradient
+Profile icon: #0463EF solid (primary blue)
 BX badge:     linear-gradient(135deg, #0463EF, #16EA9E)
 User avatar:  linear-gradient(135deg, #40406A, #0463EF)
 ```
@@ -69,14 +71,15 @@ Always use `${C.blue}` etc. when writing new inline HTML bot messages.
 
 - **ChatHeader**: slim inner breadcrumb bar (`h-12`), contains sidebar toggle + breadcrumb + connection status pill + action icons
 - **Sidebar**: collapsible (224px expanded / 48px icon rail when collapsed), white light theme (see `L` color object in Sidebar.tsx)
-  - Company header: `h-12` with logo + "Netbay Agent" + "Assistant" subtitle + chevron
+  - Company header: `h-12` with logo + "Netbay Agent" + "Assistant" subtitle (no chevron)
   - "New Chat" button at top of nav (above section groups)
   - Section "เครื่องมือ": Chatbot (plain nav, no chevron), คิวงาน (with needsYouCount badge), Dashboard
   - Section "เอกสาร": ใบอนุญาต, RGoods, ใบขน, Analytics, More
-  - Settings footer
+  - Settings footer (no borderTop): ตั้งค่า → light divider → BizX logo (links to bizx-uat.devnetbay.com in new tab)
   - Collapsed state: `CollapsedRail` (48px) shows icon-only buttons with portal tooltip on hover
 - **Queue badge**: red circle on คิวงาน sidebar item, shows `needsYouCount` from `queue.filter(s => s.isNew === true).length`
-- **QuickActionBar**: always-visible chip bar between ChatArea and ChatInput; only renders on chat view (not queue view)
+- **QuickActionBar**: centered chips (max-width 680px, no bg) between ChatArea and ChatInput; only renders on chat view
+- **ChatInput**: no bg/border-top, centered at max-width 680px; Enter to send (no send button); ↵ hint badge inside input
 
 ---
 
