@@ -180,16 +180,15 @@ function ListView({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-xs font-bold truncate" style={{ color: '#010136' }}>{s.customsNo}</span>
-                    {s.hthmRef && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium flex-shrink-0" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-                        {s.hthmRef}
-                      </span>
+                    <span className="text-xs font-bold truncate" style={{ color: '#010136' }}>{s.chatName ?? s.customsNo}</span>
+                    {s.isNew && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0" style={{ background: '#EFF6FF', color: '#0463EF' }}>ใหม่</span>
                     )}
                   </div>
                   <span className="text-[10px] flex-shrink-0" style={{ color: '#9CA3AF' }}>{s.importedAt.split(' ')[0]}</span>
                 </div>
-                <p className="text-[11px] truncate mb-1" style={{ color: '#374151' }}>{s.goods}</p>
+                <p className="text-[11px] truncate mb-0.5" style={{ color: '#374151' }}>{s.goods}</p>
+                {s.chatName && <p className="text-[10px] truncate mb-0.5" style={{ color: '#9CA3AF' }}>{s.customsNo}</p>}
                 {lastMsg && (
                   <p className="text-[11px] truncate" style={{ color: '#9CA3AF' }}>
                     {lastMsg.role === 'user' ? 'คุณ: ' : 'AI: '}{lastMsg.content.split('\n')[0]}

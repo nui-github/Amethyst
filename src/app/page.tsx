@@ -108,11 +108,19 @@ export default function Home() {
   const flagsGen = useRef(0)
   const pendingFlagValues = useRef<Record<string,string>>({})
   const emailGen = useRef(0)
+  const flowStartMsgIdx = useRef(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [submittedRefNo, setSubmittedRefNo] = useState('')
 
   const updateShipment = useCallback((id: string, patch: Partial<Shipment>) =>
     setQueue(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s)), [])
+
+  const addToQueue = useCallback((items: Shipment[]) =>
+    setQueue(prev => [...prev, ...items]), [])
+
+  const markFlowStart = useCallback((msgs: ChatMessage[]) => {
+    flowStartMsgIdx.current = msgs.length
+  }, [])
 
   const addMessage = useCallback((msg: Omit<ChatMessage,'id'|'time'>): ChatMessage => {
     const m: ChatMessage = { ...msg, id: generateId(), time: getTime() }
@@ -515,6 +523,7 @@ export default function Home() {
       chooseFullUpload:       () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       chooseCustomsDocs:      () => {
         userMsg('ใบขนสินค้า')
+        setMessages(prev => { markFlowStart(prev); return prev })
         withTyping(() => {
           setStep('invoice_upload')
           botMsg(`<p style="font-size:13px;font-weight:600;color:${C.blue};margin:0 0 8px;display:flex;align-items:center;gap:6px">${icFile(C.blue, 15)} อัปโหลดใบขนสินค้า</p>
@@ -532,8 +541,8 @@ export default function Home() {
             </button>`)
         }, 400)
       },
-      chooseDocs:             () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
-      chooseInvoiceFirst:     () => withTyping(() => showInvoiceFirstUpload(), 300),
+      chooseDocs:             () => { setMessages(prev => { markFlowStart(prev); return prev }); setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
+      chooseInvoiceFirst:     () => { setMessages(prev => { markFlowStart(prev); return prev }); withTyping(() => showInvoiceFirstUpload(), 300) },
       processInvoiceFirst:    () => processInvoiceFirstOCR(),
       uploadMoreDocs:         () => { setStep('full_upload'); addMessage({ role:'bot', content:'show_full_upload', isHtml:true }) },
       fillMissingManually:    () => showMissingFieldsForm(),
@@ -810,6 +819,7 @@ export default function Home() {
   const spnNotFound = useCallback((ref: string) => {
     setFormData({ ref, licenseType: 'RGoods' })
     setStep('not_found')
+    setMessages(prev => { markFlowStart(prev); return prev })
     const choiceCard = (onclick: string, iconBg: string, iconColor: string, icon: string, title: string, desc: string) =>
       `<div onclick="${onclick}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid ${C.n200};border-radius:12px;cursor:pointer;transition:all .18s;margin-bottom:8px"
         onmouseover="this.style.borderColor='${C.blue}';this.style.background='rgba(4,99,239,0.03)'"
@@ -840,6 +850,7 @@ export default function Home() {
   // ── FETCH SPN ───────────────────────────────────────────────────
   const fetchSPN = useCallback((ref: string) => {
     setCurrentRef(ref)
+    setMessages(prev => { markFlowStart(prev); return prev })
     setIsTyping(true)
     botMsg(`<span style="color:${C.blue};font-size:13px;display:inline-flex;align-items:center;gap:5px">${icSearch(C.blue,14)} กำลังดึงข้อมูลจาก ShippingNet สำหรับ <strong>${ref}</strong>...</span>`)
     fetchSPNApi(ref).then(({ found, data }) => {
@@ -1198,6 +1209,52 @@ export default function Home() {
       setIsTyping(false)
       const refNo = `RG-2568-${Math.floor(Math.random() * 90000 + 10000)}`
       setSubmittedRefNo(refNo)
+
+      // build queue name: HTHM ref → invoiceNo → importer·goods → timestamp
+      const buildQueueName = (fd: Partial<FormData>): string => {
+        if (fd.ref && fd.ref.startsWith('HTHM')) return fd.ref
+        if (fd.invoiceNo) return fd.invoiceNo
+        if (fd.importer && fd.goodsDesc) return `${fd.importer.replace('บริษัท ', '').replace(' จำกัด', '')} · ${fd.goodsDesc.slice(0, 30)}`
+        if (fd.importer) return fd.importer
+        return `ขอใบ ${new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`
+      }
+
+      setMessages(prev => {
+        const flowMsgs = prev.slice(flowStartMsgIdx.current)
+        const shipment: Shipment = {
+          id: generateId(),
+          chatName: buildQueueName(formData),
+          hthmRef: formData.ref?.startsWith('HTHM') ? formData.ref : undefined,
+          customsNo: refNo,
+          type: 'IMP',
+          customer: formData.importer ?? '',
+          contact: '',
+          contactEmail: '',
+          goods: formData.goodsDesc ?? formData.hsCode ?? '',
+          hs: formData.hsCode ?? '',
+          origin: formData.countryOrigin ?? '',
+          importedAt: new Date().toLocaleString('th-TH'),
+          owner: '',
+          permitNeeded: true,
+          agency: 'fda',
+          formCode: 'ร.7',
+          formName: 'แบบคำขออนุญาตนำเข้า',
+          conf: 88,
+          stage: 8,
+          statusKey: 'submitted',
+          isNew: false,
+          assess: { conf: 88, reason: 'ยื่นแล้ว' },
+          classify: { agency: 'fda', conf: 88, reason: '', alt: [] },
+          draft: { fields: [] },
+          flags: [],
+          audit: [{ time: new Date().toLocaleTimeString('th-TH'), text: 'ยืนยันส่งกรมจากแชท', by: 'เจ้าหน้าที่' }],
+          email: { toName: '', to: '', subject: '', body: '', attName: '' },
+          messages: flowMsgs,
+        }
+        addToQueue([shipment])
+        return prev
+      })
+
       botMsg(`<span style="color:${C.tealDark};font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:5px">${icCheck(C.tealDark,15)} ส่งข้อมูลสำเร็จแล้วครับ!</span>
         <div style="${cardWrap};border-color:rgba(22,234,158,0.3)">
           <div style="${cardHead};background:rgba(22,234,158,0.08);color:${C.tealDark};border-color:rgba(22,234,158,0.3)">ผลการส่งข้อมูลเข้ากรม</div>
@@ -1217,7 +1274,7 @@ export default function Home() {
         </div>`)
       setStep('done')
     }, 2200)
-  }, [formData, userMsg, botMsg])
+  }, [formData, userMsg, botMsg, addToQueue])
 
   const headerProps = {
     isConnected,
@@ -1269,7 +1326,46 @@ export default function Home() {
             onFormChange={handleFormChange} onPreview={handlePreview}
             onFullUploadOCR={handleFullUploadOCR} onQuickSend={handleSend}
             onConnected={showConnectOptions}
-            onRequestPermit={() => setSidebarActive('queue')}
+            onRequestPermit={(refs: string[]) => {
+              // create queue items for each SPN ref selected from SPNListPanel
+              const snap = messages.slice(flowStartMsgIdx.current)
+              const newItems: Shipment[] = refs.map(ref => {
+                const entry = spnEntries.find(e => e.ref === ref)
+                return {
+                  id: generateId(),
+                  chatName: ref,
+                  hthmRef: ref,
+                  customsNo: entry?.customsNo ?? ref,
+                  type: 'IMP' as const,
+                  customer: entry?.importer ?? '',
+                  contact: '',
+                  contactEmail: '',
+                  goods: entry?.goods ?? '',
+                  hs: entry?.hs ?? '',
+                  origin: entry?.origin ?? '',
+                  importedAt: new Date().toLocaleString('th-TH'),
+                  owner: '',
+                  permitNeeded: true,
+                  agency: 'fda' as const,
+                  formCode: 'ร.7',
+                  formName: 'แบบคำขออนุญาตนำเข้า',
+                  conf: 0,
+                  stage: 1,
+                  statusKey: 'needs_you' as const,
+                  isNew: true,
+                  assess: { conf: 0, reason: '' },
+                  classify: { agency: 'fda' as const, conf: 0, reason: '', alt: [] },
+                  draft: { fields: [] },
+                  flags: [],
+                  audit: [{ time: new Date().toLocaleTimeString('th-TH'), text: 'เพิ่มจากแชท', by: 'เจ้าหน้าที่' as const }],
+                  email: { toName: '', to: '', subject: '', body: '', attName: '' },
+                  messages: snap,
+                }
+              })
+              setSpnEntries(prev => prev.map(e => refs.includes(e.ref) ? { ...e, inQueue: true } : e))
+              addToQueue(newItems)
+              setSidebarActive('queue')
+            }}
           />
           <QuickActionBar
             onCreateRGoods={() => showImportLicenseMenu()}

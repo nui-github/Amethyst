@@ -104,6 +104,8 @@ export interface AuditEntry {
 
 export interface Shipment {
   id: string            // IMP-68-XXXXXX (เลขใบขน)
+  chatName?: string     // auto-generated display name from chat flow
+  isNew?: boolean       // true = not yet viewed in queue (shows badge, counts in sidebar)
   hthmRef?: string      // HTHM000000001 (เลข SPN อ้างอิง)
   messages?: ChatMessage[]  // chat history for this shipment
   customsNo: string     // A012-25680617-00XXX (เลขใบขนสินค้า)
