@@ -1,274 +1,335 @@
-# ShippingNet Assistant — Design System (BizX)
+# BizX Design System — UI Reference
 
-> Last updated: June 2026 | Version 2.0.0  
-> Design system changed from **Amethyst** → **BizX (Business Exchange)**
-
----
-
-## 🎨 BizX Color Palette
-
-Based on the **Expanded BizX Web App Style Guide** (BizX_ColorGuide.png).
-
-### Primary Blue Shades — Base `#010136`
-| Name | Hex | Tailwind Token | Usage |
-|------|-----|---------------|-------|
-| Navy Light | `#8080A5` | `navy-light` | Sidebar text, muted labels |
-| Navy Mid | `#40406A` | `navy-mid` | Sidebar dividers, user avatar gradient |
-| **Navy (Base)** | `#010136` | `navy` | Primary text, sidebar bg, headings |
-| Navy Dark | `#00001A` | `navy-dark` | Sidebar hover, deep accents |
-| Navy Deeper | `#00000D` | `navy-deeper` | Deepest dark (reserved) |
-
-### Secondary Blue Shades — Base `#0463EF`
-| Name | Hex | Tailwind Token | Usage |
-|------|-----|---------------|-------|
-| Blue Light | `#B0D0FF` | `blue-light` | Hover text in sidebar |
-| Blue Soft | `#70A0F0` | `blue-soft` | Typing dots, light accents |
-| **Blue (Base)** | `#0463EF` | `blue` | Active sidebar item, CTA buttons, links, focus rings |
-| Blue Deep | `#034DBA` | `blue-deep` | Button gradient start, darker primary |
-| Blue Darker | `#02388C` | `blue-darker` | Deep hover states |
-
-### Accent Green (Teal) Shades — Base `#16EA9E`
-| Name | Hex | Tailwind Token | Usage |
-|------|-----|---------------|-------|
-| Teal Light | `#B0FFF0` | `teal-light` | Very light teal fills |
-| Teal Soft | `#70E5C0` | `teal-soft` | Soft teal accents |
-| **Teal (Base)** | `#16EA9E` | `teal` | Success confirm buttons, OCR check marks, status dot |
-| Teal Mid | `#11BB7F` | `teal-mid` | OCR stage done color, submit button gradient |
-| Teal Dark | `#0D8F61` | `teal-dark` | Success text, OCR filled text |
-
-### Neutral Shades (Text, Borders, Backgrounds)
-| Name | Hex | Token | Role |
-|------|-----|-------|------|
-| White | `#FFFFFF` | `neutral-white` | Card bg, message bubbles, input bg |
-| `#F9F9F9` | `neutral-50` | Board BG (lightest) |
-| `#F0F0F0` | `neutral-100` | App background, card headers, input bg idle |
-| `#E0E0E0` | `neutral-200` | Borders, dividers, scrollbar track |
-| `#CCCCCC` | `neutral-300` | Dashed borders, placeholder attachments |
-| `#999999` | `neutral-500` | Secondary text, timestamps, disabled |
-| `#666666` | `neutral-600` | Labels, body secondary text |
-| `#333333` | `neutral-800` | Dark body text (fallback) |
-
-### Semantic Color Map
-| Intent | Color | Hex |
-|--------|-------|-----|
-| Primary action | Blue gradient | `#034DBA → #0463EF` |
-| Success / Confirm | Teal gradient | `#11BB7F → #16EA9E` |
-| Warning | Amber | `rgba(255,165,0,0.12)` bg / `#B45309` text |
-| Error | Red | `#C0392B` text |
-| Info | Blue soft | `rgba(4,99,239,0.10)` |
-| Source: SPN | Blue badge | `rgba(4,99,239,0.10)` / `#0463EF` |
-| Source: OCR | Teal badge | `rgba(22,234,158,0.15)` / `#0D8F61` |
-| Source: User | Amber badge | `rgba(255,165,0,0.12)` / `#B45309` |
+> Source of truth for colors, typography, spacing, components, and visual rules.  
+> See `CLAUDE.md` for architecture, state, and coding rules. See `API.md` for backend contracts.
 
 ---
 
-## 🔤 Typography
+## Color Tokens
 
-**Font Family:** IBM Plex Sans Thai  
-**Google Fonts weights:** 300, 400, 500, 600, 700  
-**Fallback chain:** IBM Plex Sans → system-ui → sans-serif
+Use hex values directly in inline `style={}`. **Never use Tailwind color classes for brand colors.**
 
-| Role | Size | Weight | Color | Usage |
-|------|------|--------|-------|-------|
-| App title | 14px | 700 | `#010136` | Header app name |
-| Section heading | 13px | 700 | `#010136` | Card headers, modal titles |
-| Body / message | 14px | 400 | `#010136` | Chat bubble content |
-| Label | 11px | 600 | `#666666` | Form labels, sidebar section titles |
-| Caption / meta | 10–11px | 400 | `#999999` | Timestamps, helper text |
-| Badge | 10–11px | 700 | varies | Source tags, status badges |
-| Sidebar nav | 12px | 600 | `#8080A5` / `#fff` | Nav items |
-| Logo text | 12px | 900 | `#fff` | BIZ X wordmark (letter-spacing: wider) |
+### Navy (Primary)
+| Token | Hex | Usage |
+|---|---|---|
+| navy | `#010136` | Headings, strong text, dark backgrounds |
+| navy-mid | `#40406A` | Secondary text, user avatar gradient |
+| navy-light | `#8080A5` | Muted text, sidebar labels, agent name |
+
+### Blue (Action)
+| Token | Hex | Usage |
+|---|---|---|
+| blue | `#0463EF` | CTA buttons, active state, links, focus rings |
+| blue-deep | `#034DBA` | Gradient start, darker primary |
+| blue-light | `#B0D0FF` | Light tint, hover backgrounds |
+
+### Teal (Success / Accent)
+| Token | Hex | Usage |
+|---|---|---|
+| teal | `#16EA9E` | Accent, success highlights |
+| teal-mid | `#11BB7F` | Submit button gradient, OCR stage done |
+| teal-dark | `#0D8F61` | Success text on light bg, checkmarks |
+
+### Neutral
+| Hex | Usage |
+|---|---|
+| `#F2F2F2` | App background (chat area) |
+| `#F9F9F9` | Card lightest background |
+| `#E0E0E0` | Borders, dividers |
+| `#CCCCCC` | Dashed borders |
+| `#999999` | Muted / placeholder / timestamps |
+| `#666666` | Label text |
+| `#333333` | Dark body text |
+| `#ffffff` | Cards, panels, sidebar, header |
+
+### Semantic
+| Intent | Background | Text |
+|---|---|---|
+| Success / Confirm | `rgba(22,234,158,0.15)` | `#0D8F61` |
+| Warning | `rgba(255,165,0,0.12)` | `#B45309` |
+| Error | `rgba(220,38,38,0.06)` | `#991B1B` |
+| Info | `rgba(4,99,239,0.08)` | `#0463EF` |
+| SPN source tag | `rgba(4,99,239,0.10)` | `#0463EF` |
+| OCR source tag | `rgba(22,234,158,0.15)` | `#0D8F61` |
+| User-edited tag | `rgba(255,165,0,0.12)` | `#B45309` |
+
+### Status badge colors (QueuePage)
+| Status | bg | text |
+|---|---|---|
+| รอคุณยืนยัน | `#FFFBEB` | `#B45309` |
+| ร่างอีเมลรอส่ง | `#EFF6FF` | `#1D4ED8` |
+| รอลูกค้ายืนยัน | `#F5F3FF` | `#6D28D9` |
+| ยื่นแล้ว | `#ECFDF5` | `#065F46` |
+| ไม่ต้องขอใบอนุญาต | `#F3F4F6` | `#6B7280` |
 
 ---
 
-## 📐 Layout
+## `C` Constant (page.tsx)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    ChatHeader (h-14, bg:#fff)               │
-│  [BIZ X logo] Title + Subtitle    [status] [bell] [avatar]  │
-├──────────────────┬──────────────────────────────────────────┤
-│   Sidebar        │                                          │
-│   w-56           │         ChatArea (flex-1)                │
-│   bg: #010136    │         bg: #F0F0F0  overflow-y-auto     │
-│                  │                                          │
-│  [BX logo]       │    [AI bubble]  [User bubble]            │
-│  Navigation      │    [OCR card]                            │
-│  History         │    [Form panel]                          │
-│  Settings        │                                          │
-│                  │                                          │
-├──────────────────┴──────────────────────────────────────────┤
-│          ChatInput (bg:#fff, border-top:#E0E0E0)            │
-└─────────────────────────────────────────────────────────────┘
+All inline HTML bot messages use this object — never hardcode hex values directly:
+
+```ts
+const C = {
+  navy:     '#010136',
+  blue:     '#0463EF',
+  blueDeep: '#034DBA',
+  teal:     '#16EA9E',
+  tealMid:  '#11BB7F',
+  tealDark: '#0D8F61',
+  n50:      '#F9F9F9',
+  n100:     '#F2F2F2',
+  n200:     '#E0E0E0',
+  n300:     '#CCCCCC',
+  n500:     '#999999',
+  n600:     '#666666',
+}
 ```
 
-**Key measurements:**
-- Sidebar: `224px` (w-56), dark navy `#010136`
-- Header: `56px` (h-14), white with bottom border `#E0E0E0`
-- Chat area background: `#F0F0F0` (Board BG)
-- Card border-radius: `14–16px`
-- Button border-radius: `10–12px`
-- Avatar: `32px` (w-8 h-8), `rounded-xl`
+Usage: `` `color:${C.blue}` ``, `` `background:${C.n100}` ``
 
 ---
 
-## 🧩 Components
+## Gradients
 
-### Sidebar
-- **Background:** `#010136` (Navy base)
-- **Logo badge:** gradient `#0463EF → #16EA9E`, `rounded-xl`
-- **Active item:** bg `#0463EF`, text white, shadow `0 2px 12px rgba(4,99,239,0.35)`
-- **Inactive item:** text `#8080A5`, hover bg `#00001A` + text `#B0D0FF`
-- **History item active:** text `#16EA9E`, bg `rgba(22,234,158,0.08)`
-- **Section divider:** `#40406A`
-- **Scrollbar thumb:** `#8080A5`
+```
+Primary CTA:   linear-gradient(135deg, #034DBA, #0463EF)
+Teal CTA:      linear-gradient(135deg, #11BB7F, #16EA9E)
+AI avatar:     linear-gradient(90deg,  #0463EF, #16EA9E)   ← same as OCR progress bar
+Sidebar logo:  linear-gradient(90deg,  #0463EF, #16EA9E)
+BX badge:      linear-gradient(135deg, #0463EF, #16EA9E)
+User avatar:   linear-gradient(135deg, #40406A, #0463EF)
+Profile icon:  #0463EF solid
+```
+
+---
+
+## Typography
+
+**Font**: IBM Plex Sans Thai — loaded via `<link>` in `layout.tsx` (not `next/font`)  
+**Weights**: 300, 400, 500, 600, 700
+
+| Role | Size | Weight | Color |
+|---|---|---|---|
+| Page / card heading | 14–16px | 700 | `#010136` |
+| Body / chat message | 13–14px | 400 | `#010136` |
+| Bot message content | 13px | 400 | `#010136` |
+| Label | 11–12px | 600 | `#666666` |
+| Caption / timestamp | 10px | 400 | `#999999` |
+| Badge / tag | 10–11px | 600–700 | varies |
+| Agent name label | 11px | 600 | `#8080A5` |
+
+---
+
+## Spacing & Layout
+
+| Property | Value |
+|---|---|
+| App background | `#F2F2F2` |
+| Card/panel background | `#ffffff` |
+| Max content width (chat) | `680px` centered |
+| Sidebar expanded | `224px` (w-56) |
+| Sidebar collapsed | `48px` icon rail |
+| Header height | `h-12` (48px) |
+| Card border-radius | `rounded-2xl` (16px) |
+| Button border-radius | `rounded-xl` (12px) |
+| Chip border-radius | `rounded-full` (20px) |
+| Card border | `1px solid #DDE1F8` |
+| Card shadow | `0 2px 12px rgba(4,10,80,0.07)` |
+
+---
+
+## Components
+
+### Sidebar (white light theme)
+```
+Background:    #ffffff
+Active item:   bg #EFF6FF, left border 3px solid #0463EF, text #010136
+Inactive item: text #374151, hover bg #F9FAFB
+Section label: text #999999, font-size 10px, uppercase, tracking-wider
+Logo badge:    gradient(90deg, #0463EF, #16EA9E), rounded-xl
+Collapsed:     48px icon rail with portal tooltip on hover
+```
 
 ### ChatHeader
-- **Background:** White `#fff`
-- **Bottom border:** `#E0E0E0`
-- **Status pill:** bg `rgba(22,234,158,0.10)`, border `rgba(22,234,158,0.35)`, dot `#16EA9E` (pulsing)
-- **Avatar:** gradient `#010136 → #0463EF`
+```
+Background:      #ffffff
+Bottom border:   1px solid #E8E8E8
+Status pill:     bg rgba(22,234,158,0.10), border rgba(22,234,158,0.35), dot #16EA9E (pulse)
+Breadcrumb text: #010136 bold / #999999 separator
+```
 
-### Message Bubbles
-| Role | Background | Border | Shadow |
-|------|-----------|--------|--------|
-| Bot | `#fff` | `1px solid #E0E0E0` | `0 2px 10px rgba(1,1,54,0.06)` |
-| User | gradient `#034DBA → #0463EF` | — | `0 4px 14px rgba(4,99,239,0.25)` |
+### AI Message Bubble
+```
+Max-width:   680px, centered
+Background:  #ffffff
+Border:      1px solid #DDE1F8
+Shadow:      0 2px 12px rgba(4,10,80,0.07)
+Radius:      rounded-2xl
+Avatar:      24×24px gradient(90deg, #0463EF, #16EA9E), text "AI", 9px bold
+Agent label: "Netbay Agent" — 11px, #8080A5
+```
 
-- **Bot corner:** `rounded-2xl rounded-bl-sm`
-- **User corner:** `rounded-2xl rounded-br-sm`
-- **Bot avatar:** gradient `#010136 → #0463EF`, shadow `0 3px 10px rgba(4,99,239,0.28)`
-- **User avatar:** gradient `#40406A → #0463EF`
-
-### Chat Cards
-- **Border:** `1px solid #E0E0E0`, `border-radius: 14px`
-- **Header:** bg `#F0F0F0`, text `#010136 700`
-- **Body:** white, `p-4`
-- **Row divider:** `border-bottom: 1px dashed #E0E0E0`
+### User Message Bubble
+```
+Background:  linear-gradient(135deg, #034DBA, #0463EF)
+Color:       #ffffff
+Radius:      rounded-2xl rounded-br-sm
+Max-width:   max-w-xs (320px)
+Avatar:      32×32px gradient(135deg, #40406A, #0463EF), Lucide <User size={14} />
+```
 
 ### Buttons
+
+> **Rule**: Use raw `<button>` with inline gradient for CTA — never shadcn `Button` for gradient styles.
+
 | Variant | Style |
-|---------|-------|
-| Primary | gradient `#034DBA → #0463EF`, shadow `0 4px 14px rgba(4,99,239,0.28)` |
-| Teal/Success | gradient `#11BB7F → #16EA9E`, shadow `0 4px 14px rgba(22,234,158,0.30)`, text `#010136` |
-| Secondary | bg `#F0F0F0`, border `#E0E0E0`, text `#666666` |
-| Danger | bg `#FFEFEF`, border `#FFCCCC`, text `#C0392B` |
+|---|---|
+| Primary (blue) | `background: linear-gradient(135deg, #034DBA, #0463EF)`, color white, rounded-xl |
+| Teal / success | `background: linear-gradient(135deg, #11BB7F, #16EA9E)`, color white, rounded-xl |
+| Ghost / secondary | `background: #F3F4F6`, color `#6B7280`, rounded-xl |
+| Danger | `background: rgba(220,38,38,0.06)`, border `rgba(220,38,38,0.2)`, color `#991B1B` |
 
-All buttons: `rounded-xl`, `font-bold`, `transition-all`, hover `scale-[1.02]`
+All buttons: `font-weight: 700`, `font-size: 13px`, `cursor: pointer`, `transition: all .15s`
 
-### Badges / Source Tags
-| Type | Background | Text |
-|------|-----------|------|
-| SPN | `rgba(4,99,239,0.10)` | `#0463EF` |
-| OCR | `rgba(22,234,158,0.15)` | `#0D8F61` |
-| User | `rgba(255,165,0,0.12)` | `#B45309` |
-| Blue (status/info) | `rgba(4,99,239,0.10)` | `#0463EF` |
-| Green (success) | `rgba(22,234,158,0.15)` | `#0D8F61` |
-| Amber (warning) | `rgba(255,165,0,0.12)` | `#B45309` |
+### Helper strings in page.tsx
+
+These are pre-built inline style strings for bot HTML messages:
+
+```ts
+btnPrimary   // blue gradient <button> with flex+gap
+btnSecondary // ghost/gray <button>
+chipStyle    // blue pill chip: padding, border-radius, blue tint bg/border/text
+badgeBlue    // inline blue rounded badge
+cardWrap     // card outer: border #E8E8F8, radius 14px
+cardHead     // card header: bg #F5F6FF, navy bold text
+cardBody     // card content: white bg, padding
+rowStyle     // label:value flex row with dashed bottom border
+```
 
 ### Quick Chips
-- Default: bg `rgba(4,99,239,0.08)`, border `rgba(4,99,239,0.25)`, text `#0463EF`
-- Hover: bg `#0463EF`, text `#fff`, shadow `0 2px 10px rgba(4,99,239,0.25)`
-- Shape: `rounded-full`
+```
+Default: bg rgba(4,99,239,0.08), border 1px solid rgba(4,99,239,0.25), color #0463EF, radius 20px
+Hover:   bg #0463EF, color #fff, shadow 0 2px 10px rgba(4,99,239,0.25)
+```
 
-### Form Fields
-| State | Border | Background | Text |
-|-------|--------|-----------|------|
-| Default | `#CCCCCC` | `#fff` | `#010136` |
-| Focus | `#0463EF` + ring `rgba(4,99,239,0.12)` | `#fff` | `#010136` |
-| Filled (OCR) | `#16EA9E` | `rgba(22,234,158,0.07)` | `#0D8F61` |
-| Filled (SPN) | `#0463EF` | `rgba(4,99,239,0.10)` | `#0463EF` |
-| Missing (required) | `#70A0F0` | `rgba(4,99,239,0.04)` | `#010136` |
+### Form Fields (FormPanel)
+| State | Border | Background |
+|---|---|---|
+| Default | `#CCCCCC` | `#ffffff` |
+| Filled (OCR) | `#16EA9E` | `rgba(22,234,158,0.07)` |
+| Filled (SPN) | `#0463EF` | `rgba(4,99,239,0.10)` |
+| Missing (required) | `#70A0F0` | `rgba(4,99,239,0.04)` |
+| Focus | `#0463EF` + ring | `#ffffff` |
 
 ### OCR Progress Bar
-- Track: `#E0E0E0`
-- Fill: gradient `#0463EF → #16EA9E` (left to right)
-- Height: `8px`, `border-radius: 9999px`
-
-### TypingIndicator
-- Avatar: gradient `#010136 → #0463EF`
-- Dots: color `#0463EF`, opacity `0.45`, bounce animation
-
----
-
-## 🎭 Shadows
-
-| Name | Value | Usage |
-|------|-------|-------|
-| `shadow-bizx` | `0 4px 20px rgba(4,99,239,0.18)` | Primary buttons, send btn |
-| `shadow-card` | `0 2px 10px rgba(1,1,54,0.08)` | Cards, bot bubbles |
-| `shadow-modal` | `0 20px 60px rgba(1,1,54,0.22)` | Modal dialogs |
-| `shadow-teal` | `0 4px 16px rgba(22,234,158,0.25)` | Teal/success buttons |
-| `shadow-navy` | `0 4px 16px rgba(1,1,54,0.3)` | Deep navy elements |
-
----
-
-## ✨ Animations
-
-| Name | Duration | Usage |
-|------|----------|-------|
-| `pulse-dot` | 2s ease-in-out | Online status indicator |
-| `bounce-dot` | 1.2s ease-in-out | Typing indicator (staggered) |
-| `slide-up` | 0.25s ease-out | Message appear, modal open |
-| `fade-in` | 0.2s ease-out | Modal overlay |
-| `spin` | 1s linear | OCR spinner, loading |
-| `slideUp` (CSS) | 0.22s ease-out | `.msg-appear` class |
-
----
-
-## 🖼️ Iconography
-
-**Library:** Lucide React `v0.383.0` — stroke-based outline icons  
-**Default stroke-width:** 2 (Lucide default)
-
-| Context | Icons | Size |
-|---------|-------|------|
-| Sidebar nav | MessageSquareText, LayoutDashboard, FileCheck2, Package, FileText, BarChart2 | 15px |
-| History | Clock3 | 12px |
-| Settings | Settings | 14px |
-| Header | Bell, Activity, User | 16px |
-| Send button | Send | 16px |
-| Attach | Paperclip | 15px |
-| Upload | CloudUpload, Play | 15–20px |
-| OCR stages | FileText, Ship, FlaskConical, BadgeCheck | 14px |
-| Status | CheckCircle, Loader2 | 14px |
-| Modal | X, Send, Edit2, CheckCircle | 13–16px |
-
----
-
-## 🗂️ File Structure
-
 ```
-src/
-├── app/
-│   ├── layout.tsx        ← Root layout, IBM Plex Sans Thai via <link>
-│   ├── globals.css       ← Tailwind + BizX CSS variables + utility classes
-│   └── page.tsx          ← All state/logic, inline HTML with BizX colors
-├── components/
-│   ├── chat/
-│   │   ├── Sidebar.tsx          ← Navy dark sidebar
-│   │   ├── ChatHeader.tsx       ← White header, teal status pill
-│   │   ├── ChatArea.tsx         ← Message renderer (F0F0F0 bg)
-│   │   ├── ChatInput.tsx        ← Textarea + blue send btn
-│   │   ├── TypingIndicator.tsx  ← Navy→blue gradient avatar
-│   │   ├── FormPanel.tsx        ← OCR form, teal filled / blue missing
-│   │   ├── FullUploadPanel.tsx  ← 4-slot drag-drop, blue gradient btn
-│   │   ├── OcrProgress.tsx      ← Blue→teal gradient progress bar
-│   │   ├── QuickChips.tsx       ← Blue pill chips, hover fills blue
-│   │   └── Modals.tsx           ← PreviewModal + ConfirmModal (teal confirm)
-│   └── ui/
-│       ├── Badge.tsx            ← Reusable badge component
-│       └── Button.tsx           ← Reusable button component
-└── lib/
-    ├── types.ts          ← TypeScript interfaces
-    └── utils.ts          ← Helpers, mock data, KNOWN_REFS
+Track:   #E0E0E0
+Fill:    .ocr-fill class → gradient(90deg, #0463EF, #16EA9E)  (defined in globals.css)
+Height:  8px, border-radius: 9999px
+```
+
+### Upload Panel (FullUploadPanel)
+```
+4 slots: invoice / customs / coa / ulicense
+Dropzone:    border 2px dashed rgba(4,99,239,0.3), bg rgba(4,99,239,0.04)
+Hover:       border #0463EF, bg rgba(4,99,239,0.08)
+Filled slot: border #16EA9E, bg rgba(22,234,158,0.06)
 ```
 
 ---
 
-## 🔄 Version History
+## shadcn/ui Components
 
-| Version | Date | Change |
-|---------|------|--------|
-| 1.0.0 | June 2026 | Initial — Amethyst design system (`#8A4FFF` purple) |
-| 2.0.0 | June 2026 | **Migrated to BizX** — Navy `#010136`, Blue `#0463EF`, Teal `#16EA9E` |
+Installed in `src/components/ui/`. Use for non-gradient, non-branded elements.
+
+| Component | Use for |
+|---|---|
+| `Button` | Ghost, outline, secondary (non-gradient) actions |
+| `Badge` | Status tags, counters |
+| `Dialog` | Modals and confirmation dialogs |
+| `Input` | Text inputs in standard forms |
+| `Textarea` | Multi-line input (ChatInput uses this) |
+| `Tabs` | Tab navigation with `variant="line"` |
+| `Checkbox` | Multi-select lists (SPNListPanel) |
+| `ScrollArea` | Scrollable regions |
+| `Progress` | Progress bars |
+| `Separator` | Dividers |
+| `Toaster` (sonner) | Toast notifications — already mounted in layout.tsx |
+
+**CSS vars** in `globals.css @layer base :root {}` map to BizX hex:
+`--primary: #0463EF`, `--accent: #16EA9E` — never change these to oklch or other formats.
+
+**Toast usage:**
+```ts
+import { toast } from 'sonner'
+toast.success('ส่งสำเร็จ')
+toast.error('เกิดข้อผิดพลาด')
+```
+
+---
+
+## Inline SVG Icon Helpers (page.tsx)
+
+Bot messages render via `dangerouslySetInnerHTML` — Lucide JSX cannot be used inside them.
+Use these helpers instead (defined at module level in `page.tsx`):
+
+```ts
+const ic = (path: string, size = 16, color = 'currentColor') =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"
+    stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+    style="display:inline-block;vertical-align:middle">${path}</svg>`
+
+icCheck      (c='#0D8F61', s=16)  → ✓ checkmark
+icX          (c='#C0392B', s=16)  → ✗ close / error
+icWarn       (c='#B45309', s=16)  → ⚠ triangle warning
+icFile       (c='#1565C0', s=16)  → document / file
+icList       (c='#0463EF', s=16)  → list lines
+icPlus       (c='#0D8F61', s=16)  → + add
+icFolder     (c='#B45309', s=16)  → folder closed
+icFolderOpen (c='#0463EF', s=32)  → folder open (large upload area)
+icSearch     (c='#0463EF', s=16)  → search / magnifier / OCR
+icShip       (c='#0D8F61', s=18)  → ship / vessel
+icUpload     (c='#0463EF', s=32)  → upload arrow (large)
+```
+
+Usage in template literal: `` `${icCheck(C.tealDark, 15)} ส่งสำเร็จ` ``  
+For flex alignment: `` `style="display:inline-flex;align-items:center;gap:5px"` ``
+
+---
+
+## Animations
+
+Defined in `globals.css` and `tailwind.config.js`:
+
+| Class / keyframe | Effect | Used in |
+|---|---|---|
+| `.msg-appear` | slide-up + fade-in on mount | Every chat bubble |
+| `bounce-dot` | 3-dot typing bounce (staggered) | TypingIndicator |
+| `pulse-dot` | slow pulse glow | Status dot in header |
+| `.ocr-fill` | blue→teal gradient fill (animated width) | OcrProgress bar |
+
+---
+
+## Shadows
+
+| Usage | Value |
+|---|---|
+| Primary button | `0 4px 14px rgba(4,99,239,0.25)` |
+| Teal button | `0 4px 14px rgba(22,234,158,0.30)` |
+| Bot bubble / card | `0 2px 12px rgba(4,10,80,0.07)` |
+| Modal | `0 20px 60px rgba(1,1,54,0.22)` |
+| Sidebar active item | `0 2px 12px rgba(4,99,239,0.35)` |
+
+---
+
+## Design Rules (Do / Don't)
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| `style={{ color: '#0463EF' }}` for brand colors | `className="text-blue-500"` for brand colors |
+| Raw `<button>` with inline gradient for CTAs | shadcn `Button` for gradient CTAs (strips styles) |
+| `C.*` constants in all bot HTML string templates | Hardcode hex values directly in template literals |
+| `icCheck`, `icX` etc. for icons in bot messages | Lucide JSX inside `dangerouslySetInnerHTML` |
+| IBM Plex Sans Thai via `<link>` in layout.tsx | `next/font` for this font (not compatible) |
+| `toast` from `sonner` for notifications | Custom toast state |
+| shadcn CSS vars stay as hex values | Change vars to oklch or hsl formats |
